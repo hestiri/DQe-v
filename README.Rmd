@@ -1,12 +1,11 @@
 ---
 title: "Variability Explorer Tool, Version 2.0"
 author: "Hossein Estiri"
-date: "November 3, 2015"
-output: html_document
+date: "December, 2015"
 runtime: shiny
 ---
 
-This application is duilt to help researchers explore variability in Electronic Health Record data. It is designed based on OMOP V.4 CDM, but can be easily adapted to other data models.
+This application is built to help researchers (or any other data users) explore variability in Electronic Health Record data. It is designed based on OMOP CDM, but can be easily adapted to other data models.
 
 ## Inputs and Outputs
 
@@ -35,12 +34,12 @@ renderPlot({
 It's also possible to embed an entire Shiny application within an R Markdown document using the `shinyAppDir` function. This example embeds a Shiny application located in another directory:
 
 ```{r, echo=FALSE}
-shinyAppDir(
-  system.file("app", package="shiny"),
-  options=list(
-    width="100%", height=550
-  )
-)
+# shinyAppDir(
+#   # system.file("app", package="shiny"),
+#   options=list(
+#     width="100%", height=550
+#   )
+# )
 ```
 
 Note the use of the `height` parameter to determine how much vertical space the embedded application should occupy.
