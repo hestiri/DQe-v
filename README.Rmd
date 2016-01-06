@@ -13,6 +13,17 @@ Interactivity is a key attribute to VET's philosophy, through which the tool doe
 
 ## Inputs and Outputs
 
+The R script `Read.R` reads the data and feeds it to the application. It uses the `data.table` package to read the input data (via `fread`). Follow the annotated instructions inside `Read.R` to set the source location and prepare the data for VET.
+
+# The Data Model
+
+```{r, echo=TRUE}
+str(srcdt)
+```
+
+
+
+
 You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change.  This demonstrates how a standard R plot can be made interactive by wrapping it in the Shiny `renderPlot` function. The `selectInput` and `sliderInput` functions create the input widgets used to drive the plot.
 
 ```{r, echo=FALSE}
