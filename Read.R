@@ -1,11 +1,16 @@
-#install.packages(c("data.table", "lubridate", "magrittr"), dependencies=TRUE)
-require(data.table);library(dplyr)
+#install.packages(c("data.table"), dependencies=TRUE)
+require(data.table)
 
-# Read  the source data.
-srcdt <- fread("~/OneDrive UW/OneDriveBusiness/Variability2/VET_II/database.csv")
+# Reading the source data.
+## set the source location:
+src <- "~/Desktop/database.csv"
+## read the data from source
+srcdt <- fread(src)
+## look at data structure
+str(srcdt)
+## create a new factor variable out of the time unit 
 srcdt$factor <- as.factor(srcdt$u_Time) 
 
-names(srcdt)
 
 
 
