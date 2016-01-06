@@ -2,6 +2,7 @@
 title: "Variability Explorer Tool -- Version 2.0"
 author: "Hossein Estiri"
 date: "January, 2016"
+output: html_document
 ---
 
 ## Introduction to the Application
@@ -14,35 +15,51 @@ Interactivity is a key attribute to VET's philosophy, through which the tool doe
 ## Inputs and Outputs
 
 The R script `Read.R` reads the data and feeds it to the application. It uses the `data.table` package to read the input data (via `fread`). Follow the annotated instructions inside `Read.R` to set the source location and prepare the data for VET.
+```{r, echo=FALSE, cache=FALSE, results= 'hide', include=FALSE}
+require(data.table)
+## set the source location (for this illustration I have saved the example data on my desktop):
+src <- "~/Desktop/database.csv"
+## read the data from source
+srcdt <- fread(src)
+```
 
-# The Data Model
-
-```{r, echo=TRUE}
+### The Data Model
+The data model that the tool feeds from consists of 3 aggregation units (`u_Loc`, `u_Time`, and `U-Cond`), 2 counts (`population`, and `patient`), and a percentage (`prevalence`) that was derived from the 2 counts. The data model is flexible in a sense that the 3 aggregation units can be defined at any spatial level, time scales, and condition of interest. See the data structure bellow:
+```{r, echo=FALSE, results='markup', include=TRUE}
+## look at data structure
 str(srcdt)
 ```
 
+
+1. Column `u_Loc` stores the location/spatial unit of analysis as character. Examples of spatial unit are clinic, organization, census tract, and county. 
+2. `u_Time`, of type integer, stores the time unit, which can be at any intervals (i.e., hourly, daily, monthly, annual, etc.) as long as the unit is consistent across the dataset.
+3. The condition of interest can be stored in `u_Cond` column as character. Condition unit is defined here broadly – it can be a particular subset of the data, a patient cohort, a set of medications or clinical conditions, or the entire data. The application’s interface is designed to automatically read all the unique values stored in `u_Cond` column, so more than one condition can be stored in this column.
+4. Column `population` stores the total patient population at location/spatial unit X and time unit Y as integer. 
+5. Column ‘patient’ is the subset of total patient population (at location/spatial unit X and time unit Y, as in column `population`) who have condition unit Z, stored as integer. 
+6. The proportion of patients with condition Z from the total population at location/spatial unit X and time unit Y is stored in column `prevalence`, as integer or number – divide `patient` by `population`.
+ 
 
 
 
 You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change.  This demonstrates how a standard R plot can be made interactive by wrapping it in the Shiny `renderPlot` function. The `selectInput` and `sliderInput` functions create the input widgets used to drive the plot.
 
-```{r, echo=FALSE}
-inputPanel(
-  selectInput("n_breaks", label = "Number of bins:",
-              choices = c(10, 20, 35, 50), selected = 20),
-  
-  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
-              min = 0.2, max = 2, value = 1, step = 0.2)
-)
-
-renderPlot({
-  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks),
-       xlab = "Duration (minutes)", main = "Geyser eruption duration")
-  
-  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
-  lines(dens, col = "blue")
-})
-```
+# ```{r, echo=FALSE}
+# inputPanel(
+#   selectInput("n_breaks", label = "Number of bins:",
+#               choices = c(10, 20, 35, 50), selected = 20),
+#   
+#   sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+#               min = 0.2, max = 2, value = 1, step = 0.2)
+# )
+# 
+# renderPlot({
+#   hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks),
+#        xlab = "Duration (minutes)", main = "Geyser eruption duration")
+#   
+#   dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+#   lines(dens, col = "blue")
+# })
+# ```
 
 ## Embedded Application
 
