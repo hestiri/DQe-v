@@ -1,11 +1,10 @@
 ---
-title: "Variability Explorer Tool, Version 2.0"
+title: "Variability Explorer Tool -- Version 2.0"
 author: "Hossein Estiri"
 date: "December, 2015"
-runtime: shiny
 ---
 
-This application is built to help researchers (or any other data users) explore variability in Electronic Health Record data. It is designed based on OMOP CDM, but can be easily adapted to other data models.
+This application is built to help researchers (or any other EHR data users) explore variability in Electronic Health Record data. Multiple statistical procedures exist to detect anomalies in data. Most of these procedures have been designed for time series data that, by definition, do not match characteristics of ordinary patient records from EHR systems. Other methods to detect variability in data might be considered too statistical for the average clinical researchers, and/or are expected to be conducted at a "study" level -- not as an overall veiw of variability at database/warehouse levels. This tool provides a solution to overview of variability in data from two lenses (where visual is inherent in both), a "exploratory" overview of and "regression-based" It is designed based on OMOP CDM, but can be easily adapted to other data models.
 
 ## Inputs and Outputs
 
