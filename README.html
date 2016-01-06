@@ -77,8 +77,7 @@ img {
 <p>The R script <code>Read.R</code> reads the data and feeds it to the application. It uses the <code>data.table</code> package to read the input data (via <code>fread</code>). Follow the annotated instructions inside <code>Read.R</code> to set the source location and prepare the data for VET.</p>
 <div id="the-data-model" class="section level3">
 <h3>The Data Model</h3>
-<pre class="r"><code>## look at data structure
-str(srcdt)</code></pre>
+<p>The data model that the tool feeds from consists of 3 aggregation units (<code>u_Loc</code>, <code>u_Time</code>, and <code>U-Cond</code>), 2 counts (<code>population</code>, and <code>patient</code>), and a percentage (<code>prevalence</code>) that was derived from the 2 counts. The data model is flexible in a sense that the 3 aggregation units can be defined at any spatial level, time scales, and condition of interest. See the data structure bellow:</p>
 <pre><code>## Classes 'data.table' and 'data.frame':   968 obs. of  6 variables:
 ##  $ u_Loc     : chr  &quot;LOC_O&quot; &quot;LOC_L&quot; &quot;LOC_E&quot; &quot;LOC_O&quot; ...
 ##  $ u_Time    : int  1998 2008 2001 2004 1983 2010 2011 1994 2012 1969 ...
@@ -87,6 +86,14 @@ str(srcdt)</code></pre>
 ##  $ patient   : int  3 22 1 63 19 29 660 1 21 173 ...
 ##  $ prevalence: num  0.75 0.26506 0.00408 0.52941 0.00813 ...
 ##  - attr(*, &quot;.internal.selfref&quot;)=&lt;externalptr&gt;</code></pre>
+<ol style="list-style-type: decimal">
+<li>Column <code>u_Loc</code> stores the location/spatial unit of analysis as character. Examples of spatial unit are clinic, organization, census tract, and county.</li>
+<li><code>u_Time</code>, of type integer, stores the time unit, which can be at any intervals (i.e., hourly, daily, monthly, annual, etc.) as long as the unit is consistent across the dataset.</li>
+<li>The condition of interest can be stored in <code>u_Cond</code> column as character. Condition unit is defined here broadly – it can be a particular subset of the data, a patient cohort, a set of medications or clinical conditions, or the entire data. The application’s interface is designed to automatically read all the unique values stored in <code>u_Cond</code> column, so more than one condition can be stored in this column.</li>
+<li>Column <code>population</code> stores the total patient population at location/spatial unit X and time unit Y as integer.</li>
+<li>Column ‘patient’ is the subset of total patient population (at location/spatial unit X and time unit Y, as in column <code>population</code>) who have condition unit Z, stored as integer.</li>
+<li>The proportion of patients with condition Z from the total population at location/spatial unit X and time unit Y is stored in column <code>prevalence</code>, as integer or number – divide <code>patient</code> by <code>population</code>.</li>
+</ol>
 <p>You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change. This demonstrates how a standard R plot can be made interactive by wrapping it in the Shiny <code>renderPlot</code> function. The <code>selectInput</code> and <code>sliderInput</code> functions create the input widgets used to drive the plot.</p>
 </div>
 </div>
