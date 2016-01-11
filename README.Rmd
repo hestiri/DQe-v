@@ -13,8 +13,8 @@ Interactivity is a key attribute to VET's philosophy, through which the tool doe
 
 
 ## Inputs and Outputs
-
-The R script `Read.R` reads the data and feeds it to the application. It uses the `data.table` package to read the input data (via `fread`). Follow the annotated instructions inside `Read.R` to set the source location and prepare the data for VET.
+### Preparing and Reading the Data -- `Read.R`
+The R script `Read.R` reads the data and feeds it to the application. It uses the `data.table` package to read the input data (via `fread`). All packagews that are being used to run the application are also loaded in `Read.R`. Follow the annotated instructions inside `Read.R` to set the source location and prepare the data for VET. 
 ```{r, echo=FALSE, cache=FALSE, results= 'hide', include=FALSE}
 require(data.table)
 ## set the source location (for this illustration I have saved the example data on my desktop):
@@ -23,7 +23,7 @@ src <- "~/Desktop/database.csv"
 srcdt <- fread(src)
 ```
 
-### The Data Model
+#### The Data Model
 The data model that the tool feeds from consists of 3 aggregation units (`u_Loc`, `u_Time`, and `U-Cond`), 2 counts (`population`, and `patient`), and a percentage (`prevalence`) that was derived from the 2 counts. The data model is flexible in a sense that the 3 aggregation units can be defined at any spatial level, time scales, and condition of interest. See the data structure bellow:
 ```{r, echo=FALSE, results='markup', include=TRUE}
 ## look at data structure
@@ -39,6 +39,15 @@ str(srcdt)
 6. The proportion of patients with condition Z from the total population at location/spatial unit X and time unit Y is stored in column `prevalence`, as integer or number – divide `patient` by `population`.
  
 
+The `Read.R` adds a new column to this data model where it copies the `u_Time` variable as factor that will be used later by the app to generate two of the plots. For illustration purposes, an example dataset `database.csv` is provided. Output of the `Read.R` is the source dataset, `srcdt`, which feeds all application functions in `app.R`. 
+
+## Running the Application
+Once the `Read.R` is set up for the first time, it is not necessary to open it again. To run the application, run all codes in `app.R`, which first sources `Read.R`. All coding to process data, run the analyses, and generate plots lives in `app.R`. Code chunks in `app.R` prepare the data for the User Interface (UI), set up the UI, setu up the server and associated plots, and finally run the application using `shinyApp(ui, server)`. This application uses *navbarPage* format for the Shiny app -- [learn more here][link1]. 
+
+### UI and Server Data
+`app.R` processes source data `srcdt` that has been read into R by `Read.R` to produce a dataset for the UI (`datUI`) and a reactive dataset for `dat()` for server.
 
 
+
+[link1]: http://shiny.rstudio.com/reference/shiny/latest/navbarPage.html "learn about navbarPage"
 
