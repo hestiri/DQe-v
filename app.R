@@ -1,12 +1,11 @@
-# install.packages("shinydashboard")
-## app.R ##
-library(shiny);library(ggplot2);library(gridExtra);require(treemap);require(dplyr);library(shinydashboard);library(shinythemes)
+################################### # # # # ##
+####### Running the Application #######
 
-
+# Sourcing Read.R to read the source file.
 source("read.R")
 
-
-
+#preparing data for the UI
+# calculating and adding Interquartile Range ratio
 z <- aggregate (srcdt$prevalence, by=list(srcdt$u_Time), FUN=IQR,na.rm = TRUE)
 z[is.na(z)] <- 0
 names(z)[1]<-paste("u_Time")
@@ -14,6 +13,7 @@ names(z)[2]<-paste("iqr")
 datUI <- merge(srcdt, z, by="u_Time")
 mean <- mean(datUI$iqr,na.rm = TRUE)
 datUI$iqr <- (datUI$iqr)/mean
+# calculating and adding Standard Deviation ratio
 z2 <- aggregate (srcdt$prevalence, by=list(srcdt$u_Time), FUN=sd,na.rm = TRUE)
 z2[is.na(z2)] <- 0
 names(z2)[1]<-paste("u_Time")
@@ -30,7 +30,6 @@ ui <- navbarPage(title = "Variability Explorere Tool",
                         tabPanel("Exploratory Analysis",
                                  sidebarLayout(
                                    sidebarPanel(
-                                     #selectInput("var", "Select Data", choices=c("ADD" = 1 , "Citalopram" = 2,"Diabetes" = 3 , "PAP" = 4,"PSA" = 5, "Under-30" = 6, "Male" = 7, "TDAP" = 8, "PTSD" = 9), selected = 6, multiple = T ),
                                      selectizeInput(
                                        'var', label = "Select Data", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition/group')
                                      ),
@@ -55,7 +54,6 @@ ui <- navbarPage(title = "Variability Explorere Tool",
                  tabPanel("Regression-Based Analysis",
                           sidebarLayout(
                             sidebarPanel(
-                              #selectInput("varREG", "Select Data", choices=c("ADD" = 1 , "Citalopram" = 2,"Diabetes" = 3 , "PAP" = 4,"PSA" = 5, "Under-30" = 6, "Male" = 7, "TDAP" = 8, "PTSD" = 9), selected = 6, multiple = T ),
                               selectizeInput(
                                 'varREG', label = "BB", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition')
                               ),
@@ -79,7 +77,6 @@ ui <- navbarPage(title = "Variability Explorere Tool",
                  tabPanel("Treemap",
                           sidebarLayout(
                             sidebarPanel(
-                              #selectInput("var", "Select Data", choices=c("ADD" = 1 , "Citalopram" = 2,"Diabetes" = 3 , "PAP" = 4,"PSA" = 5, "Under-30" = 6, "Male" = 7, "TDAP" = 8, "PTSD" = 9), selected = 6, multiple = T ),
                               selectizeInput(
                                 'var', label = "Select Condition", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a u_Cond of variables')
                               ),
@@ -165,32 +162,32 @@ server <- function(input, output) {
     ##plotting: 
     ## first plot, d1, is a box plot with jittered points in the background. Users can change the Interquartile Range ratio to choose their range to select u_Times with high variability
     d1 <-   qplot(as.factor(u_Time), prevalence, data=dat4, geom=c("boxplot", "jitter"), 
-                  fill=iqr, main="Patient by Clinic-u_Time--Based on Interquartile Range",   
+                  fill=iqr, main="Prevalence by Location-Time -- Based on Interquartile Range",   
                   alpha=I(1/2), aes(color=u_Time),
-                  xlab="Time Unit", ylab="W-Patient") + 
+                  xlab="Time Unit", ylab="Prevalence") + 
       scale_fill_continuous(low="gold", high="red", limits=c(mn1,mx1)) 
     
     ## second plot, d2, is a box plot with jittered points in the background. Users can change the Standard Deviation ratio to choose their range to select u_Times with high variability
     d2 <-   qplot(as.factor(u_Time), prevalence, data=dat4, geom=c("boxplot", "jitter"), 
-                  fill=std, main="Patient by Clinic-u_Time--Based on Standard Deviation Range",   
+                  fill=std, main="Prevalence by Location-Time -- Based on Standard Deviation Range",   
                   alpha=I(1/2), aes(color=u_Time),
-                  xlab="u_Time", ylab="W-Patient") +
+                  xlab="Time Unit", ylab="Prevalence") +
       scale_fill_continuous(low="gold", high="red", limits=c(mn2,mx2))
     
     ## third plot, d3, is a scatter plot of  weighted patient size (prevalence) with jittered points in the background. 
     ##A smoothed regression line shows the overall trend in prevalence of selected cohort of patients over time.
-    d3 <- qplot(u_Time, prevalence, data=dat4, main="Patient by Clinic-u_Time-mean W-percentage",
-                xlab="u_Time", ylab="W-Patient") + 
+    d3 <- qplot(u_Time, prevalence, data=dat4, main="Prevalence Over Time",
+                xlab="Time Unit", ylab="Prevalence") + 
       stat_smooth(level=0.99) + 
-      geom_point(position = "jitter", alpha = 0.3) + 
+      geom_point(alpha = 0.3) + 
       scale_x_continuous(breaks=year_m:2014)
     
     ## fourth plot, d4, is a scatter plot of  total patient size (population) with jittered points in the background. 
     ##A smoothed regression line shows the overall patient size from each clinic over time.
-    d4 <- qplot(u_Time, population, data=dat4, main="Patient by Clinic-u_Time-Patient size",
-                xlab="u_Time", ylab="Patient Pop") + 
+    d4 <- qplot(u_Time, population, data=dat4, main="Overall Patient Population Over Time",
+                xlab="Time Unit", ylab="Overall Patient Population") + 
       stat_smooth(colour = "red",level=0.99) + 
-      geom_point(position = "jitter", alpha = 0.3) + 
+      geom_point(alpha = 0.3) + 
       scale_x_continuous(breaks=year_m:2014)
     
     ##arranging the plots using grid.arrange
