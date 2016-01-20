@@ -4,35 +4,22 @@
 # Sourcing Read.R to read the source file.
 source("read.R") 
 
-#preparing data for the UI
-# calculating and adding Interquartile Range ratio
-z <- aggregate (srcdt$prevalence, by=list(srcdt$u_Time), FUN=IQR,na.rm = TRUE)
-z[is.na(z)] <- 0
-names(z)[1]<-paste("u_Time")
-names(z)[2]<-paste("iqr")
-datUI <- merge(srcdt, z, by="u_Time")
-mean <- mean(datUI$iqr,na.rm = TRUE)
-datUI$iqr <- (datUI$iqr)/mean
-# calculating and adding Standard Deviation ratio
-z2 <- aggregate (srcdt$prevalence, by=list(srcdt$u_Time), FUN=sd,na.rm = TRUE)
-z2[is.na(z2)] <- 0
-names(z2)[1]<-paste("u_Time")
-names(z2)[2]<-paste("std")
-datUI <- merge(datUI, z2, by="u_Time")
-mean2 <- mean(datUI$std,na.rm = TRUE)
-datUI$std <- (datUI$std)/mean2
-#setting the range date after 1980
-datUI <- subset(datUI, datUI$u_Time >= 1980)
+
+#setting the range date for UI to after 1980
+datUI <- subset(srcdt, srcdt$u_Time >= 1980)
 rm(z,z2)
 
 ui <- navbarPage(title = "Variability Explorere Tool", 
-                 theme = shinytheme("Journal"),
+                 theme = shinytheme("journal"),
                         tabPanel("Exploratory Analysis",
                                  sidebarLayout(
                                    sidebarPanel(
                                      selectizeInput(
-                                       'var', label = "Select Data", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition/group')
+                                       'var', label = "Select Data", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition/group'),
+                                       selected = unique(datUI$u_Cond)[3], 
+                                       multiple = T
                                      ),
+                                     br(),
 
                                      helpText("text will go here"),
                                      sliderInput("slider", "Select a Time Unit Range",
@@ -40,11 +27,11 @@ ui <- navbarPage(title = "Variability Explorere Tool",
 
                                      helpText("text will go here"),
                                      sliderInput("slider2", "Select Interquartile Range",
-                                                 min =0, max = 10, value = c(min(datUI$iqr),max(datUI$iqr)), step = 0.5),
+                                                 min =0, max = 10, value = c(1,6), step = 0.5),
    
                                      helpText("text will go here"),
                                      sliderInput("slider3", "Select Deviation Range",
-                                                 min =0, max = 10, value = c(min(datUI$std),max(datUI$std)), step = 0.5)
+                                                 min =0, max = 10, value = c(1,6), step = 0.5)
                                      ),
                                    mainPanel(
                                      plotOutput("myplot", height = 900)
@@ -55,8 +42,12 @@ ui <- navbarPage(title = "Variability Explorere Tool",
                           sidebarLayout(
                             sidebarPanel(
                               selectizeInput(
-                                'varREG', label = "BB", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition')
+                                'varREG', label = "BB", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition'),
+                                selected = unique(datUI$u_Cond)[3], 
+                                multiple = T
                               ),
+                              br(),
+
                               
                               helpText("text will go here"),
                               sliderInput("sliderREG", "Select Time Unit Range",
@@ -217,12 +208,7 @@ server <- function(input, output) {
   
   
   output$myplot4 <- renderPlot({
-    ##ignore the subsets
-    ##training set
-    #data2 <- subset(data, u_Time <2012 & u_Time > 1999) ##this should be data-1 u_Time
-    #data3 <- subset(data, u_Time == 2013) ##this is the last u_Time requested for if we want to show the last u_Time data in a different color...data2+data3=data4
-    #names(data)
-    
+
     dat2 <- datREG()
     xdata <- datREG()
     dat2$prd <- 0
