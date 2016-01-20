@@ -45,7 +45,14 @@ The `Read.R` adds a new column to this data model where it copies the `u_Time` v
 Once the `Read.R` is set up for the first time, it is not necessary to open it again. To run the application, run all codes in `app.R`, which first sources `Read.R`. All coding to process data, run the analyses, and generate plots lives in `app.R`. Code chunks in `app.R` prepare the data for the User Interface (UI), set up the UI, setu up the server and associated plots, and finally run the application using `shinyApp(ui, server)`. This application uses *navbarPage* format for the Shiny app -- [learn more here][link1]. 
 
 ### UI and Server Data
-`app.R` processes source data `srcdt` that has been read into R by `Read.R` to produce a dataset for the UI (`datUI`) and a reactive dataset for `dat()` for server.
+`app.R` processes source data `srcdt` that has been read into R by `Read.R` to produce data for the UI (`datUI`) and reactive data (`dat`) for server. Through data processing, the code adds two new columns to the source data where it stores two ratio indices for Interquartile Range and Standard Deviation, which will then be used for the **Exploratory Analysis** tab.
+
+* Interquartile Range Ratio. Column `iqr` stores the ratio of interquartile range
+* Standard Deviation Ratio
+  
+  
+  
+  
 
 
 

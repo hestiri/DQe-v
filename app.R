@@ -2,7 +2,7 @@
 ####### Running the Application #######
 
 # Sourcing Read.R to read the source file.
-source("read.R")
+source("read.R") 
 
 #preparing data for the UI
 # calculating and adding Interquartile Range ratio
@@ -40,11 +40,11 @@ ui <- navbarPage(title = "Variability Explorere Tool",
 
                                      helpText("text will go here"),
                                      sliderInput("slider2", "Select Interquartile Range",
-                                                 min =min(datUI$iqr), max = 10, value = c(min(datUI$iqr),max(datUI$iqr)), step = 0.1),
+                                                 min =0, max = 10, value = c(min(datUI$iqr),max(datUI$iqr)), step = 0.5),
    
                                      helpText("text will go here"),
                                      sliderInput("slider3", "Select Deviation Range",
-                                                 min =min(datUI$std), max = 10, value = c(min(datUI$std),max(datUI$std)), step = 0.1)
+                                                 min =0, max = 10, value = c(min(datUI$std),max(datUI$std)), step = 0.5)
                                      ),
                                    mainPanel(
                                      plotOutput("myplot", height = 900)
@@ -143,15 +143,7 @@ server <- function(input, output) {
     ##remove not needed objects
     rm(dat2,dat3,z,z2,z3)
     
-    ##mean of wieghten patient size is now added as a new column and saved into a new table, dat4
-    #calculate mean of actual patient size
-    #    z4 <- aggregate (dat()$patient, by=list(dat()$factor), FUN=mean,na.rm = TRUE)
-    #    z4[is.na(z4)] <- 0
-    #    names(z4)[1]<-paste("factor")
-    #    names(z4)[2]<-paste("meanP")
-    #    dat5 <- merge(dat4, z4, by="factor")
-    # ##mean of actual patient size is now added as a new column and saved into a new table, dat5
-    
+
     ##setting values for plots from the UI    
     mn1 <- min(input$slider2,na.rm = TRUE)
     mx1 <- max(input$slider2,na.rm = TRUE)
