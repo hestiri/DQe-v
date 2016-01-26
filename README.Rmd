@@ -18,7 +18,7 @@ The R script `Read.R` reads the data and feeds it to the application. It uses th
 ```{r, echo=FALSE, cache=FALSE, results= 'hide', include=FALSE}
 require(data.table)
 ## set the source location (for this illustration I have saved the example data on my desktop):
-src <- "~/Desktop/database.csv"
+src <- "~/Desktop/testdata.csv"
 ## read the data from source
 srcdt <- fread(src)
 ```
@@ -45,14 +45,19 @@ The `Read.R` adds a new column to this data model where it copies the `u_Time` v
 Once the `Read.R` is set up for the first time, it is not necessary to open it again. To run the application, run all codes in `app.R`, which first sources `Read.R`. All coding to process data, run the analyses, and generate plots lives in `app.R`. Code chunks in `app.R` prepare the data for the User Interface (UI), set up the UI, setu up the server and associated plots, and finally run the application using `shinyApp(ui, server)`. This application uses *navbarPage* format for the Shiny app -- [learn more here][link1]. 
 
 ### UI and Server Data
-`app.R` processes source data `srcdt` that has been read into R by `Read.R` to produce data for the UI (`datUI`) and reactive data (`dat` and `datREG`) for server. The application uses `datUI` to read in the unique condition units, `u_Cond`, from the source data and automatically fill in the *Select Data* option on the left. Since too old EHR data are currently often not reliable, the data on UI panel is limited to years after 1980.
+`app.R` processes source data `srcdt` that has been read into R by `Read.R` to produce data for the UI (`datUI`) and reactive data (`dat` and `datREG`) for server. The application uses `datUI` to read in the unique condition units, `u_Cond`, from the source data and automatically fill in the *Select Data* option on the left. Since "too old" EHR data are currently often not reliable, the data on UI panel is limited to years after 1980.
 
-Through data processing, the code adds two new columns to the source data prepared for server (`dat`), where it stores two ratio indices for Interquartile Range and Standard Deviation, which will then be used for the **Exploratory Analysis** tab.
+Through data processing, the code adds two new columns to the source data prepared for the server (`dat`), where it stores two ratio indices for Interquartile Range and Standard Deviation, which will then be used for the **Exploratory Analysis** tab.
 
 * Interquartile Range Ratio. Column `iqr` stores the ratio of interquartile range for each time unit (`u_Time`), calculated from the interquartile range of each time unit divided by the mean interquartile range over all time units.
 * Standard Deviation Ratio. Column `std` stores the ratio of standard deviation for each time unit (`u_Time`), calculated from the within time unit standard deviation divided by the mean standard deviation over all time units.
 
 Using the two indices, `iqr` and `std`, users can interactively highlight time units where the two values are significantly over the overall patterns.
+
+## The Exploratory Analysis Tab
+
+see figure 1.
+![alt text] [https://github.com/hestiri/VET/blob/master/graphics/Tab%20%3D%20Exploratory%20Analysis.png]
   
   
   
