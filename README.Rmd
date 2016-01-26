@@ -57,7 +57,7 @@ Using the two indices, `iqr` and `std`, users can interactively highlight time u
 ## The Exploratory Analysis Tab
 
 see figure 1.
-![alt text] [https://github.com/hestiri/VET/blob/master/graphics/Tab%20%3D%20Exploratory%20Analysis.png]
+![alt text] [VET/graphics/Tab = Exploratory Analysis.png]
   
   
   
