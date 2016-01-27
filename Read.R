@@ -4,7 +4,7 @@
 ####  Install and load the required packages
 packages <- c("data.table", "shiny", "ggplot2", "gridExtra", "treemap", 
               "dplyr", "shinydashboard", "shinythemes")
-install.packages(packages, dependencies=TRUE) ## comment out this line after you run the application one time.
+# install.packages(packages, dependencies=TRUE) ## comment out this line after you run the application one time.
 library(data.table);library(shiny);library(ggplot2);
 library(gridExtra);require(treemap);require(dplyr);
 library(shinydashboard);library(shinythemes)
@@ -12,7 +12,7 @@ library(shinydashboard);library(shinythemes)
 
 # Reading the source data.
 ## set the source location:
-src <- "~/Desktop/database.csv"
+src <- "~/Desktop/testdata.csv"
 ## read the data from source
 srcdt <- fread(src)
 ## look at data structure
