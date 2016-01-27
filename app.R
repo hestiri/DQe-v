@@ -9,28 +9,25 @@ source("read.R")
 datUI <- subset(srcdt, srcdt$u_Time >= 1980)
 rm(z,z2)
 
-ui <- navbarPage(title = "Variability Explorere Tool", 
+ui <- navbarPage(title = "Variability Explorer Tool", 
                  theme = shinytheme("journal"),
                         tabPanel("Exploratory Analysis",
                                  sidebarLayout(
                                    sidebarPanel(
+                                     helpText("Select the condition(s) of interest"),
                                      selectizeInput(
                                        'var', label = "Select Data", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition/group'),
-                                       selected = unique(datUI$u_Cond)[3], 
+                                       selected = unique(datUI$u_Cond)[1], 
                                        multiple = T
                                      ),
-                                     br(),
 
-                                     helpText("text will go here"),
                                      sliderInput("slider", "Select a Time Unit Range",
                                                  min = 1980, max = 2014, value = c(1999, 2014)),
-
-                                     helpText("text will go here"),
-                                     sliderInput("slider2", "Select Interquartile Range",
+                                     br(),
+                                     helpText("Select IQR/SD ranges that you would consider as high variability"),
+                                     sliderInput("slider2", "Select Interquartile Range (IQR)",
                                                  min =0, max = 10, value = c(1,6), step = 0.5),
-   
-                                     helpText("text will go here"),
-                                     sliderInput("slider3", "Select Deviation Range",
+                                     sliderInput("slider3", "Select Deviation Range (SD)",
                                                  min =0, max = 10, value = c(1,6), step = 0.5)
                                      ),
                                    mainPanel(
@@ -43,7 +40,7 @@ ui <- navbarPage(title = "Variability Explorere Tool",
                             sidebarPanel(
                               selectizeInput(
                                 'varREG', label = "BB", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition'),
-                                selected = unique(datUI$u_Cond)[3], 
+                                selected = unique(datUI$u_Cond)[1], 
                                 multiple = T
                               ),
                               br(),
@@ -52,7 +49,7 @@ ui <- navbarPage(title = "Variability Explorere Tool",
                               helpText("text will go here"),
                               sliderInput("sliderREG", "Select Time Unit Range",
                                           min = 1980, max = 2014, value = c(1999, 2014)),
-                              
+                              br(),
 
                               helpText("text will go here"),
                               sliderInput("slider5", "Select Polynomial Degree",
@@ -148,21 +145,24 @@ server <- function(input, output) {
                   fill=iqr, main="Prevalence by Location-Time -- Based on Interquartile Range",   
                   alpha=I(1/2), aes(color=u_Time),
                   xlab="Time Unit", ylab="Prevalence") + 
-      scale_fill_continuous(low="gold", high="red", limits=c(mn1,mx1)) 
+      theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
+      scale_fill_continuous(low="gold", high="red", limits=c(mn1,mx1), name="Interquartile Range Ratio",guide = FALSE) 
+    
     
     ## second plot, d2, is a box plot with jittered points in the background. Users can change the Standard Deviation ratio to choose their range to select u_Times with high variability
     d2 <-   qplot(as.factor(u_Time), prevalence, data=dat4, geom=c("boxplot", "jitter"), 
                   fill=std, main="Prevalence by Location-Time -- Based on Standard Deviation Range",   
                   alpha=I(1/2), aes(color=u_Time),
-                  xlab="Time Unit", ylab="Prevalence") +
-      scale_fill_continuous(low="gold", high="red", limits=c(mn2,mx2))
-    
+                  xlab="Time Unit", ylab="Prevalence") + 
+      theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
+      scale_fill_continuous(low="gold", high="red", limits=c(mn2,mx2), name="Standard Devation Ratio",guide = FALSE) 
     ## third plot, d3, is a scatter plot of  weighted patient size (prevalence) with jittered points in the background. 
     ##A smoothed regression line shows the overall trend in prevalence of selected cohort of patients over time.
-    d3 <- qplot(u_Time, prevalence, data=dat4, main="Prevalence Over Time",
+    d3 <- qplot(u_Time, prevalence, data=dat4, main="Prevalence Over Time", #geom = "jitter",
                 xlab="Time Unit", ylab="Prevalence") + 
       stat_smooth(level=0.99) + 
       geom_point(alpha = 0.3) + 
+      theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
       scale_x_continuous(breaks=year_m:2014)
     
     ## fourth plot, d4, is a scatter plot of  total patient size (population) with jittered points in the background. 
@@ -171,6 +171,7 @@ server <- function(input, output) {
                 xlab="Time Unit", ylab="Overall Patient Population") + 
       stat_smooth(colour = "red",level=0.99) + 
       geom_point(alpha = 0.3) + 
+      theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
       scale_x_continuous(breaks=year_m:2014)
     
     ##arranging the plots using grid.arrange
