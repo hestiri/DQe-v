@@ -35,6 +35,27 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                                    )
                                  )
                         ),
+                 tabPanel("Density",
+                          sidebarLayout(
+                            sidebarPanel(
+                              selectizeInput(
+                                'varden', label = "Select Condition", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a u_Cond of variables')
+                              ),
+                              
+                              helpText("text will go here"),
+                              sliderInput("sliderden", "Select Time Unit Range",
+                                          min = 1980, max = 2014, value = c(2005, 2013))#,
+                              
+                              #                               helpText("text will go here"),
+                              #                               sliderInput("slider4", "Select Standard Deviation for Treemap",
+                              #                                           min =0, max = 3, value = 1, step = 0.1)
+                            ),
+                            mainPanel(
+                              plotOutput("myplot3", height = 600)
+                            )
+                          )
+                 ),
+                 
                  tabPanel("Regression-Based Analysis",
                           sidebarLayout(
                             sidebarPanel(
@@ -60,28 +81,9 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                               dataTableOutput("mytable")
                             )
                           )
-                 ),
-                 
-                 tabPanel("Treemap",
-                          sidebarLayout(
-                            sidebarPanel(
-                              selectizeInput(
-                                'var', label = "Select Condition", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a u_Cond of variables')
-                              ),
-                              
-                              helpText("text will go here"),
-                              sliderInput("slider", "Select Time Unit Range",
-                                          min = 1980, max = 2014, value = c(1999, 2014)),
-                              
-                              helpText("text will go here"),
-                              sliderInput("slider4", "Select Standard Deviation for Treemap",
-                                          min =0, max = 3, value = 1, step = 0.1)
-                            ),
-                            mainPanel(
-                              plotOutput("myplot3", height = 600)
-                            )
-                          )
                  )
+                 
+                 
                  
                         
 )
@@ -90,6 +92,9 @@ ui <- navbarPage(title = "Variability Explorer Tool",
 server <- function(input, output) { 
   dat <- reactive({
     subset(srcdt, srcdt$u_Time >= min(input$slider) & srcdt$u_Time <= max(input$slider) & srcdt$u_Cond ==input$var)
+  })
+  datden <- reactive({
+    subset(srcdt, srcdt$u_Time >= min(input$sliderden) & srcdt$u_Time <= max(input$sliderden) & srcdt$u_Cond ==input$varden)
   })
   datREG <- reactive({
     subset(srcdt, srcdt$u_Time >= min(input$sliderREG) & srcdt$u_Time <= max(input$sliderREG) & srcdt$u_Cond ==input$varREG)
@@ -188,29 +193,36 @@ server <- function(input, output) {
   
   
   output$myplot3 <- renderPlot({
-    ##the treemap in this plot shows u_Times in which standard deviation ratio (u_Time's std/all u_Times' std) is bigger than or equal to an entry from the UI 
-    #add std to a new table, dat2
-    z <- aggregate (dat()$prevalence, by=list(dat()$u_Time), FUN=sd,na.rm = TRUE)
-    z[is.na(z)] <- 0
-    names(z)[1]<-paste("u_Time")
-    names(z)[2]<-paste("std")
-    dat2 <- merge(dat(), z, by="u_Time")
+      #     ##the treemap in this plot shows u_Times in which standard deviation ratio (u_Time's std/all u_Times' std) is bigger than or equal to an entry from the UI 
+      #     #add std to a new table, dat2
+      #     z <- aggregate (dat()$prevalence, by=list(dat()$u_Time), FUN=sd,na.rm = TRUE)
+      #     z[is.na(z)] <- 0
+      #     names(z)[1]<-paste("u_Time")
+      #     names(z)[2]<-paste("std")
+      #     dat2 <- merge(dat(), z, by="u_Time")
+      #     
+      #     #calculate std ratio
+      #     meanstd <- mean(dat2$std,na.rm = TRUE)
+      #     dat2$std <- (dat2$std)/meanstd
+      #     
+      #     
+      #     #calculate index for when std is bigger than the average selected
+      #     dat2$index <- ifelse(dat2$std>=(input$slider4), 1, 0)
+      #     
+      #     #generate 1 cell for counting number of data points within each u_Time
+      #     dat2$numb <- 1
+      #     
+      #     #plot the treemap
+      #     
+      #     treemap(dat2, index=c('index','u_Time'), vSize='numb', title = 'number of records with high variability in each time unit',
+      #             fontsize.title = 30)
     
-    #calculate std ratio
-    meanstd <- mean(dat2$std,na.rm = TRUE)
-    dat2$std <- (dat2$std)/meanstd
-    
-    
-    #calculate index for when std is bigger than the average selected
-    dat2$index <- ifelse(dat2$std>=(input$slider4), 1, 0)
-    
-    #generate 1 cell for counting number of data points within each u_Time
-    dat2$numb <- 1
-    
-    #plot the treemap
-    
-    treemap(dat2, index=c('index','u_Time'), vSize='numb', title = 'number of records with high variability in each time unit',
-            fontsize.title = 30)
+    ggplot(datden(), aes(prevalence, fill = factor, colour = factor)) + 
+      geom_density(alpha = 0.2, show.legend = FALSE) +
+      theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
+      xlab(paste0("Prevalence of ",input$varden, sep ="")) + ylab("Density") + 
+      ggtitle("Density Distribution of Prevalence By Year") +
+      facet_wrap(~factor)
     
   })
   
@@ -261,28 +273,22 @@ server <- function(input, output) {
     dat2$anom2 <- ifelse(dat2$patient>dat2$highSE2 | dat2$patient<dat2$lowSE2, 1, 0)
     datanom2 <- subset(dat2, dat2$anom2 == 1)
     
-  p1 <-  ggplot(dat2, aes(u_Time,patient, label = u_Loc)) +
-      # geom_label(aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 2, show.legend = FALSE, alpha = 0.5)+
+  p1 <-  ggplot(dat2, aes(u_Time,log10(patient), col = u_Loc)) +
       geom_point(alpha = 0.7, show.legend = FALSE) + 
-      geom_point(data = datanom, aes(u_Time, patient), shape = 21, colour = "black", fill = "white", size = 6, stroke = 1) +
-      #geom_text(data = datanom, aes(u_Time, patient))+
-      geom_point(data = datanom2, aes(u_Time, patient), colour="red", size = 5) +
+      geom_point(data = datanom, aes(u_Time, log10(patient)), shape = 21, colour = "black", fill = "white", size = 5, stroke = 1, alpha = 0.8) +
+      geom_point(data = datanom2, aes(u_Time, log10(patient)), colour="red", size = 3.5, alpha = 0.8) +
       theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
-    xlab("") + ylab(paste0("Number of Patient with ",input$varREG, sep ="")) + 
+    xlab("") + ylab(paste0("LOG Number of Patient with ",input$varREG, sep ="")) + 
       ggtitle("Regression-based Anomaly Detection") +
       facet_wrap(~u_Time, scale="free_x", nrow = 1, switch = "x") +
     theme(axis.text.x=element_text(colour="white", size = 0.1)) 
 
-  p2 <-  ggplot(dat2, aes(u_Time,patient, label = u_Loc)) +
-    geom_label(aes(fill = factor(u_Loc)), colour = "white", fontface = "plain", size = 2, show.legend = FALSE, alpha = 0.3)+
-    # geom_point(alpha = 0.7, show.legend = FALSE) + 
-    # geom_point(data = datanom, aes(u_Time, patient), shape = 21, colour = "black", fill = "white", size = 6, stroke = 1) +
-    geom_label(data = datanom, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 3, show.legend = FALSE)+
-    #geom_text(data = datanom, aes(u_Time, patient))+
-    # geom_point(data = datanom2, aes(u_Time, patient), colour="red", size = 5) +
-    geom_label(data = datanom2, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 3, show.legend = FALSE)+
+  p2 <-  ggplot(dat2, aes(u_Time,log10(patient), label = u_Loc)) +
+    geom_label(aes(fill = factor(u_Loc)), colour = "white", fontface = "plain", size = 2, show.legend = FALSE, alpha = 0.2)+
+    # geom_label(data = datanom, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 2, show.legend = FALSE, alpha = 0.6)+
+    geom_label(data = datanom2, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 2.5, show.legend = FALSE, alpha = 0.95)+
     theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
-    xlab("Time Unit") + ylab(paste0("Number of Patient with ",input$varREG, sep ="")) + 
+    xlab("Time Unit") + ylab(paste0("LOG Number of Patient with ",input$varREG, sep ="")) + 
     facet_wrap(~u_Time, scale="free_x", nrow = 1, switch = "x")  +
     theme(axis.text.x=element_text(colour="white", size = 0.1)) 
   
