@@ -7,7 +7,7 @@ source("read.R")
 
 #setting the range date for UI to after 1980
 datUI <- subset(srcdt, srcdt$u_Time >= 1980)
-rm(z,z2)
+
 
 ui <- navbarPage(title = "Variability Explorer Tool", 
                  theme = shinytheme("journal"),
@@ -53,7 +53,7 @@ ui <- navbarPage(title = "Variability Explorer Tool",
 
                               helpText("text will go here"),
                               sliderInput("slider5", "Select Polynomial Degree",
-                                          min =1, max = 5, value = 2, step = 1)
+                                          min =1, max = 5, value = 1, step = 1)
                             ),
                             mainPanel(
                               plotOutput("myplot4", height = 600),
@@ -141,27 +141,34 @@ server <- function(input, output) {
     
     ##plotting: 
     ## first plot, d1, is a box plot with jittered points in the background. Users can change the Interquartile Range ratio to choose their range to select u_Times with high variability
-    d1 <-   qplot(as.factor(u_Time), prevalence, data=dat4, geom=c("boxplot", "jitter"), 
-                  fill=iqr, main="Prevalence by Location-Time -- Based on Interquartile Range",   
-                  alpha=I(1/2), aes(color=u_Time),
-                  xlab="Time Unit", ylab="Prevalence") + 
+    d1 <-   ggplot(dat4, aes(x=as.factor(u_Time), y=prevalence)) + 
+      geom_jitter(width = 0.2, alpha = 0.3) +
+      geom_boxplot(aes(fill=iqr), outlier.colour = "red", outlier.shape = 1, alpha = 0.5) +
+      scale_fill_continuous(low="gold", high="red", limits=c(mn1,mx1), name="Interquartile Range Ratio",guide = FALSE) +
       theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
-      scale_fill_continuous(low="gold", high="red", limits=c(mn1,mx1), name="Interquartile Range Ratio",guide = FALSE) 
+      labs(title = "Prevalence by Location-Time -- Based on Interquartile Range") + labs(x = "Time Unit") + labs(y = "Prevalence")
+    
     
     
     ## second plot, d2, is a box plot with jittered points in the background. Users can change the Standard Deviation ratio to choose their range to select u_Times with high variability
-    d2 <-   qplot(as.factor(u_Time), prevalence, data=dat4, geom=c("boxplot", "jitter"), 
-                  fill=std, main="Prevalence by Location-Time -- Based on Standard Deviation Range",   
-                  alpha=I(1/2), aes(color=u_Time),
-                  xlab="Time Unit", ylab="Prevalence") + 
+    d2 <-   ggplot(dat4, aes(x=as.factor(u_Time), y=prevalence)) + 
+      geom_jitter(width = 0.2, alpha = 0.3) +
+      geom_boxplot(aes(fill=std), outlier.colour = "red", outlier.shape = 1, alpha = 0.5) +
+      scale_fill_continuous(low="gold", high="red", limits=c(mn2,mx2), name="Interquartile Range Ratio",guide = FALSE) +
       theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
-      scale_fill_continuous(low="gold", high="red", limits=c(mn2,mx2), name="Standard Devation Ratio",guide = FALSE) 
+      labs(title = "Prevalence by Location-Time -- Based on Interquartile Range") + labs(x = "Time Unit") + labs(y = "Prevalence")
+    
+    
+    
+    
+    
+    
     ## third plot, d3, is a scatter plot of  weighted patient size (prevalence) with jittered points in the background. 
     ##A smoothed regression line shows the overall trend in prevalence of selected cohort of patients over time.
     d3 <- qplot(u_Time, prevalence, data=dat4, main="Prevalence Over Time", #geom = "jitter",
                 xlab="Time Unit", ylab="Prevalence") + 
       stat_smooth(level=0.99) + 
-      geom_point(alpha = 0.3) + 
+      geom_point(alpha = 0.2) + 
       theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
       scale_x_continuous(breaks=year_m:2014)
     
@@ -254,17 +261,44 @@ server <- function(input, output) {
     dat2$anom2 <- ifelse(dat2$patient>dat2$highSE2 | dat2$patient<dat2$lowSE2, 1, 0)
     datanom2 <- subset(dat2, dat2$anom2 == 1)
     
-    par(mfrow=c(2,1), oma = c(1,0,1,0) ,mar = c(1.5,0,2,0))
+  p1 <-  ggplot(dat2, aes(u_Time,patient, label = u_Loc)) +
+      # geom_label(aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 2, show.legend = FALSE, alpha = 0.5)+
+      geom_point(alpha = 0.7, show.legend = FALSE) + 
+      geom_point(data = datanom, aes(u_Time, patient), shape = 21, colour = "black", fill = "white", size = 6, stroke = 1) +
+      #geom_text(data = datanom, aes(u_Time, patient))+
+      geom_point(data = datanom2, aes(u_Time, patient), colour="red", size = 5) +
+      theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
+    xlab("") + ylab(paste0("Number of Patient with ",input$varREG, sep ="")) + 
+      ggtitle("Regression-based Anomaly Detection") +
+      facet_wrap(~u_Time, scale="free_x", nrow = 1, switch = "x") +
+    theme(axis.text.x=element_text(colour="white", size = 0.1)) 
 
-    ##regular plot of data with linear regression method to show outliers
-    plot(dat2$patient~dat2$u_Time,  xlab="", ylab="Patient", type = "b" , main = "Outliers with Linear Regression", 
-         xlim=c(min(input$sliderREG),max(input$sliderREG)), pch=0) ##
-    points(datanom$patient~datanom$u_Time, col = "red", pch=15)
-
-    ##regular plot of data with polynomial regression method to show outliers
-    plot(dat2$patient~dat2$u_Time,  xlab="u_Time", ylab="Patient", type = "b" , main = "Outliers with Polynomial Regression", 
-         xlim=c(min(input$sliderREG),max(input$sliderREG)), pch=1) ##add x and y mins later-- 
-    points(datanom2$patient~datanom2$u_Time, col = "red", pch=19)
+  p2 <-  ggplot(dat2, aes(u_Time,patient, label = u_Loc)) +
+    geom_label(aes(fill = factor(u_Loc)), colour = "white", fontface = "plain", size = 2, show.legend = FALSE, alpha = 0.3)+
+    # geom_point(alpha = 0.7, show.legend = FALSE) + 
+    # geom_point(data = datanom, aes(u_Time, patient), shape = 21, colour = "black", fill = "white", size = 6, stroke = 1) +
+    geom_label(data = datanom, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 3, show.legend = FALSE)+
+    #geom_text(data = datanom, aes(u_Time, patient))+
+    # geom_point(data = datanom2, aes(u_Time, patient), colour="red", size = 5) +
+    geom_label(data = datanom2, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 3, show.legend = FALSE)+
+    theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
+    xlab("Time Unit") + ylab(paste0("Number of Patient with ",input$varREG, sep ="")) + 
+    facet_wrap(~u_Time, scale="free_x", nrow = 1, switch = "x")  +
+    theme(axis.text.x=element_text(colour="white", size = 0.1)) 
+  
+  grid.arrange(p1, p2, nrow=2)
+    
+#     par(mfrow=c(2,1), oma = c(1,0,1,0) ,mar = c(1.5,0,2,0))
+# 
+#     ##regular plot of data with linear regression method to show outliers
+#     plot(dat2$patient~dat2$u_Time,  xlab="", ylab="Patient", type = "b" , main = "Outliers with Linear Regression", 
+#          xlim=c(min(input$sliderREG),max(input$sliderREG)), pch=0) ##
+#     points(datanom$patient~datanom$u_Time, col = "red", pch=15)
+# 
+#     ##regular plot of data with polynomial regression method to show outliers
+#     plot(dat2$patient~dat2$u_Time,  xlab="u_Time", ylab="Patient", type = "b" , main = "Outliers with Polynomial Regression", 
+#          xlim=c(min(input$sliderREG),max(input$sliderREG)), pch=1) ##add x and y mins later-- 
+#     points(datanom2$patient~datanom2$u_Time, col = "red", pch=19)
 
   })
   
