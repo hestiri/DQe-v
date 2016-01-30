@@ -16,7 +16,7 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                                    sidebarPanel(
                                      helpText("Select the condition(s) of interest"),
                                      selectizeInput(
-                                       'var', label = "Select Data", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition/group'),
+                                       'var', label = "Select Data", choices = unique(datUI$u_Cond), options = list(placeholder = 'select condition(s) of interest'),
                                        selected = unique(datUI$u_Cond)[1], 
                                        multiple = T
                                      ),
@@ -28,29 +28,41 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                                      sliderInput("slider2", "Select Interquartile Range (IQR)",
                                                  min =0, max = 10, value = c(1,6), step = 0.5),
                                      sliderInput("slider3", "Select Deviation Range (SD)",
-                                                 min =0, max = 10, value = c(1,6), step = 0.5)
+                                                 min =0, max = 10, value = c(1,6), step = 0.5),
+                                     HTML("<I>Outliers are marked in red on Box plots.</I>")
+
                                      ),
                                    mainPanel(
                                      plotOutput("myplot", height = 900)
                                    )
                                  )
                         ),
-                 tabPanel("Density",
+                 tabPanel("       Density Plots      ",
                           sidebarLayout(
                             sidebarPanel(
                               selectizeInput(
-                                'varden', label = "Select Condition", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a u_Cond of variables')
+                                'varden', label = "Select Condition", choices = unique(datUI$u_Cond), options = list(placeholder = 'select condition(s) of interest'),
+                                selected = unique(datUI$u_Cond)[1], 
+                                multiple = T
                               ),
+                              br(),
                               
-                              helpText("text will go here"),
+                              helpText("Select the variable you wish to observe its density distribution."),
+                              selectizeInput(
+                                'varden2', label = "Select Variable", choices=names(datUI)[4:6], options = list(placeholder = 'select variable of interest'),
+                                selected = names(datUI)[6], 
+                                multiple = F
+                              ),
+                              br(),
                               sliderInput("sliderden", "Select Time Unit Range",
-                                          min = 1980, max = 2014, value = c(2005, 2013))#,
+                                          min = 1980, max = 2014, value = c(2005, 2013)),
+                              br(),
+                              HTML("<I>Density plots are complimentory to the visualizations 
+                                       in the Exploratory Analysis tab.</I>")
                               
-                              #                               helpText("text will go here"),
-                              #                               sliderInput("slider4", "Select Standard Deviation for Treemap",
-                              #                                           min =0, max = 3, value = 1, step = 0.1)
                             ),
                             mainPanel(
+#                               textOutput("text1"),
                               plotOutput("myplot3", height = 600)
                             )
                           )
@@ -60,21 +72,22 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                           sidebarLayout(
                             sidebarPanel(
                               selectizeInput(
-                                'varREG', label = "BB", choices = unique(datUI$u_Cond), options = list(placeholder = 'select a condition'),
+                                'varREG', label = "BB", choices = unique(datUI$u_Cond), options = list(placeholder = 'select condition(s) of interest'),
                                 selected = unique(datUI$u_Cond)[1], 
                                 multiple = T
                               ),
                               br(),
 
-                              
-                              helpText("text will go here"),
                               sliderInput("sliderREG", "Select Time Unit Range",
                                           min = 1980, max = 2014, value = c(1999, 2014)),
                               br(),
 
                               helpText("text will go here"),
                               sliderInput("slider5", "Select Polynomial Degree",
-                                          min =1, max = 5, value = 1, step = 1)
+                                          min =1, max = 5, value = 1, step = 1),
+                              br(),
+                              helpText("text will go here")
+                              
                             ),
                             mainPanel(
                               plotOutput("myplot4", height = 600),
@@ -193,39 +206,24 @@ server <- function(input, output) {
   
   
   output$myplot3 <- renderPlot({
-      #     ##the treemap in this plot shows u_Times in which standard deviation ratio (u_Time's std/all u_Times' std) is bigger than or equal to an entry from the UI 
-      #     #add std to a new table, dat2
-      #     z <- aggregate (dat()$prevalence, by=list(dat()$u_Time), FUN=sd,na.rm = TRUE)
-      #     z[is.na(z)] <- 0
-      #     names(z)[1]<-paste("u_Time")
-      #     names(z)[2]<-paste("std")
-      #     dat2 <- merge(dat(), z, by="u_Time")
-      #     
-      #     #calculate std ratio
-      #     meanstd <- mean(dat2$std,na.rm = TRUE)
-      #     dat2$std <- (dat2$std)/meanstd
-      #     
-      #     
-      #     #calculate index for when std is bigger than the average selected
-      #     dat2$index <- ifelse(dat2$std>=(input$slider4), 1, 0)
-      #     
-      #     #generate 1 cell for counting number of data points within each u_Time
-      #     dat2$numb <- 1
-      #     
-      #     #plot the treemap
-      #     
-      #     treemap(dat2, index=c('index','u_Time'), vSize='numb', title = 'number of records with high variability in each time unit',
-      #             fontsize.title = 30)
+##the treemap in this plot shows u_Times in which standard deviation ratio (u_Time's std/all u_Times' std) is bigger than or equal to an entry from the UI 
+#add std to a new table, dat2
     
-    ggplot(datden(), aes(prevalence, fill = factor, colour = factor)) + 
-      geom_density(alpha = 0.2, show.legend = FALSE) +
-      theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
-      xlab(paste0("Prevalence of ",input$varden, sep ="")) + ylab("Density") + 
-      ggtitle("Density Distribution of Prevalence By Year") +
-      facet_wrap(~factor)
+    myplot = function(col) {
+      ggplot(datden(), aes_string(x = col, fill = "factor", colour = "factor")) + 
+        geom_density(alpha = 0.4, show.legend = FALSE) +
+        theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
+        xlab(paste0(input$varden2," of ",input$varden, sep ="")) + ylab("Density") + 
+        ggtitle(paste0("Density distribution of ",input$varden2," by year", sep = "")) +
+        facet_wrap(~factor)
+    }
+    myplot(input$varden2)
     
   })
   
+#   output$text1 <- renderText({ 
+#     "* These visualizations are complimentory to the the visualizations in the Exploratory Analysis tab."
+#   })
   
   output$myplot4 <- renderPlot({
 

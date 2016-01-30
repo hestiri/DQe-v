@@ -68,9 +68,12 @@ Two scatter plots complement information provided by Box plots. Plot number thre
 
 Last plot, Overall Patient Population Over Time, is a scater plot of the overall population within location units (e.g., primary care clinics), regardless of condition unit. This plot illustrates the changing pattern in population seen at location units within the selected time units. For example, in Figure 1, high variability between years 2001 and 2005 can be related to the relatively smaller population size across location units within those years.
   
-  
-  
+## The Density Plots
+ 
+To complement the visualizations provided in **Exploratory Analysis**, the **Density Plots** tab displays smoothed probability density function of `prevalence` variable for the selected condition and time range (Figure 2). Density plots show changes in distribution of 
 
+![alt text](graphics/tab2.png)
+Figure 1. The Exploratory Analysis Tab
 
 
 [link1]: http://shiny.rstudio.com/reference/shiny/latest/navbarPage.html "learn about navbarPage"
