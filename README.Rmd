@@ -54,14 +54,30 @@ Through data processing, the code adds two new columns to the source data prepar
 
 Using the two indices, `iqr` and `std`, users can interactively highlight time units where the two values are significantly above the overall patterns.
 
-## The Exploratory Analysis Tab
-The **Exploratory Analysis** tab provides four visualizations for the user to explore potential variability (or lack thereof) in the data -- see Figure 1. On the left-hand side meneu, the user can select a unit condition (or a set of conditions) from column `u_Cond` in the source data. The UI automatically recognizes and lists unqiue values in `u_Cond`. The user can also select a time unit range to zoom in on a particular time period or zoom out to see the overall trend. These settings feed the necessary data to generate the four visualizations for exploring variability. The X axis on all four graphics is the time unit, `u_Time`, whereas the Y uses frequencies of population with the condition of interest (`u_Cond`) within the selected time period.
+## TABS (Change the heading)
+### The Variability Preview Tab
+The **Variability Preview** tab provides a dynamic interactive overview of the data through a Box plot, which is a conventional plot for looking at variability, and a Scatter plot (Figure 1), using `ggplot` and `plotly` packages in R -- all graphics are produced using `ggplot`, and all dynamic graphics are enhanced with `plotly`.The Y axis in both plots represent the prevalence for the selected condition, and the X axes show the selected time unit. There are additional information embedded in the Box plots. By hovering over the Box plot the user can see the actual values for maximum, third quantile, one standard error above mean (in blue), mean value (in red), median, first quantile, and minimum of prevalence across location units and at each time unit.
+
+In addition to the prevalence value at different location units, the size of point on the Scatter plot represent log of population at each unit location and time. That is, the user can view prevalence value in light of how big or small population at each location unit is.
 
 ![alt text](graphics/tab1.png)
-Figure 1. The Exploratory Analysis Tab
+Figure 1. The Variability Preview Tab
+
+### The Exploratory Analysis Tab
+The **Exploratory Analysis** tab provides four visualizations for the user to explore potential variability (or lack thereof) in the data. On the left-hand side meneu, the user can select a unit condition (or a set of conditions) from column `u_Cond` in the source data. The UI automatically recognizes and lists unqiue values in `u_Cond`. The user can also select a time unit range to zoom in on a particular time period or zoom out to see the overall trend. These settings feed the necessary data to generate the four visualizations for exploring variability (Figure 1). 
+
+<img src="graphics/tab2-menu.png" style="height:350px;">
+
+Figure 1. The Exploratory Analysis Tab's Menu Bar
+
+The X axis on all four graphics is the time unit, `u_Time`, whereas the Y uses prevalence of the condition of interest (`u_Cond`) within the selected time period.
 
 #### Prevalence Box Plots
-The first two graphics in this tab (Prevalence by Location-Time) are ordinary Box plots of the `prevalence` variable, which show distribution of prevalence (i.e., patient divided by population) of the selected condition among units of locations across the selected time period. A scatter plot with jittered data points are also overlayed in the background. Box plots at any specific time unit illustrate maximum, minimum, first and third quartiles, and median for the prevalence of the selected unit condition. In the example dataset, unit of time is year. The two graphics show variations in annual prevalence of conditions E and A between years 1999 and 2014. Box plots are usually adequate to visualize variability. However, to add more to these plots, users can highlight time units in which Interquartile Range (first plot) and Standard Deviation (second plot) are within a certain range. This interactive function allows users to highlight particular time units that have higher Interquartile Range or Standard Deviation than the average over the selected time period. In figure 1, for example, years in which Interquartile Range and Standard Deviation for conditions E and A are between one to 6 times more than the average Interquartile Range and Standard Deviation within 1999 and 2014 are highlighted. A continous color spectrum from gold to red is dynamically assigned to the minimum and maximum of selected ranges for better visual presentation of variability.
+The first two graphics in this tab (Prevalence by Location-Time) are ordinary Box plots of the `prevalence` variable, which show distribution of prevalence (i.e., patient divided by population) of the selected condition among units of locations across the selected time period. A scatter plot with jittered data points are also overlayed in the background. Box plots at any specific time unit illustrate maximum, minimum, first and third quartiles, and median for the prevalence of the selected unit condition. In the example dataset, unit of time is year. The two graphics show variations in annual prevalence of conditions E and A between years 1999 and 2014. Box plots are conventionally used to visualize variability. However, to add more to these plots, users can highlight time units in which Interquartile Range (first plot) and Standard Deviation (second plot) are within a certain range. This interactive function allows users to highlight particular time units that have higher Interquartile Range or Standard Deviation than the average over the selected time period. In figure 1, for example, years in which Interquartile Range and Standard Deviation for conditions E and A are between one to 6 times more than the average Interquartile Range and Standard Deviation within 1999 and 2014 are highlighted. A continous color spectrum from gold to red is dynamically assigned to the minimum and maximum of selected ranges for better visual presentation of variability.
+
+
+![alt text](graphics/tab2.png)
+Figure 2. The Exploratory Analysis Tab's Plots
 
 #### Scatter Plots
 Two scatter plots complement information provided by Box plots. Plot number three (Prevalence Over Time) adds a smoothed regression line with confidence intervals to the scatter plot of prevalence over time unit. The regression line illustrates the overall variability pattern. The confidence interval visually represents data points across time units, helping the users make a more informed decision about variability conveyed through the Box plots. 
@@ -72,8 +88,16 @@ Last plot, Overall Patient Population Over Time, is a scater plot of the overall
  
 To complement the visualizations provided in **Exploratory Analysis**, the **Density Plots** tab displays smoothed probability density function of `prevalence` variable for the selected condition and time range (Figure 2). Density plots show changes in distribution of 
 
-![alt text](graphics/tab2.png)
-Figure 1. The Exploratory Analysis Tab
+![alt text](graphics/tab3.png)
+Figure 3. The Exploratory Analysis Tab
+
+
+## Regression-based Analysis
+"By default, with raw = FALSE, poly() computes an orthogonal polynomial. It internally sets up the model matrix with the raw coding x, x^2, x^3, ... first and then scales the columns so that each column is orthogonal to the previous ones. This does not change the fitted values but has the advantage that you can see whether a certain order in the polynomial significantly improves the regression over the lower orders."
+
+
+![alt text](graphics/tab4.png)
+Figure 4. The Exploratory Analysis Tab
 
 
 [link1]: http://shiny.rstudio.com/reference/shiny/latest/navbarPage.html "learn about navbarPage"

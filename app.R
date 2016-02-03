@@ -11,6 +11,37 @@ datUI <- subset(srcdt, srcdt$u_Time >= 1980)
 
 ui <- navbarPage(title = "Variability Explorer Tool", 
                  theme = shinytheme("journal"),
+                         tabPanel("  Variability Preview  ",
+                                  sidebarLayout(
+                                    sidebarPanel(
+                                      helpText("Select the condition(s) of interest"),
+                                      selectizeInput(
+                                        'var0', label = "Select Data", choices = unique(datUI$u_Cond), options = list(placeholder = 'select condition(s) of interest'),
+                                        selected = unique(datUI$u_Cond)[1], 
+                                        multiple = T
+                                      ),
+                                      
+                                      sliderInput("slider0", "Select a Time Unit Range",
+                                                  min = 1980, max = 2014, value = c(2004, 2013), step = 5
+                                                  ),
+                                      
+                                      helpText("Time units are set to change in 5 unit
+                                           intervals for speed.")
+                                      
+                                    ),
+                                    mainPanel(
+                                      plotlyOutput("myplot0", height = 400),
+                                      helpText("Hover over the Box plot to see the actual values for Max, 3rd quantile, mean (in red), 
+                                               1 standard error over mean (in blue), median, 1st quantile, and Min.", height=100),
+                                      br(),
+                                      plotlyOutput("myplot00", height = 400),
+                                      helpText("Size of the poits on Scatter plot represent log of population at each location unit and time unit.
+                                               Hover over to see values for the prevalence and log of population size for each location unit.", height=100),
+                                      br()
+
+                                    )
+                                  )
+                         ),
                         tabPanel("Exploratory Analysis",
                                  sidebarLayout(
                                    sidebarPanel(
@@ -22,7 +53,7 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                                      ),
 
                                      sliderInput("slider", "Select a Time Unit Range",
-                                                 min = 1980, max = 2014, value = c(1999, 2014)),
+                                                 min = 1980, max = 2014, value = c(2004, 2013)),
                                      br(),
                                      helpText("Select IQR/SD ranges that you would consider as high variability"),
                                      sliderInput("slider2", "Select Interquartile Range (IQR)",
@@ -33,7 +64,7 @@ ui <- navbarPage(title = "Variability Explorer Tool",
 
                                      ),
                                    mainPanel(
-                                     plotOutput("myplot", height = 900)
+                                     plotOutput("myplot", height = 1200)
                                    )
                                  )
                         ),
@@ -55,15 +86,14 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                               ),
                               br(),
                               sliderInput("sliderden", "Select Time Unit Range",
-                                          min = 1980, max = 2014, value = c(2005, 2013)),
+                                          min = 1980, max = 2014, value = c(2004, 2013)),
                               br(),
                               HTML("<I>Density plots are complimentory to the visualizations 
                                        in the Exploratory Analysis tab.</I>")
                               
                             ),
                             mainPanel(
-#                               textOutput("text1"),
-                              plotOutput("myplot3", height = 600)
+                              plotlyOutput("myplot3", height = 600)
                             )
                           )
                  ),
@@ -79,14 +109,15 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                               br(),
 
                               sliderInput("sliderREG", "Select Time Unit Range",
-                                          min = 1980, max = 2014, value = c(1999, 2014)),
+                                          min = 1980, max = 2014, value = c(2004, 2013)),
                               br(),
 
-                              helpText("text will go here"),
+                              helpText("Select the smoothing degree for the regression model."),
                               sliderInput("slider5", "Select Polynomial Degree",
                                           min =1, max = 5, value = 1, step = 1),
                               br(),
-                              helpText("text will go here")
+                              helpText("The table highlights location and time units in which results of the linear model
+                                       and the polynomial model do not conform.")
                               
                             ),
                             mainPanel(
@@ -103,6 +134,9 @@ ui <- navbarPage(title = "Variability Explorer Tool",
 
 
 server <- function(input, output) { 
+  dat0 <- reactive({
+    subset(srcdt, srcdt$u_Time >= min(input$slider0) & srcdt$u_Time <= max(input$slider0) & srcdt$u_Cond ==input$var0)
+  })
   dat <- reactive({
     subset(srcdt, srcdt$u_Time >= min(input$slider) & srcdt$u_Time <= max(input$slider) & srcdt$u_Cond ==input$var)
   })
@@ -176,10 +210,7 @@ server <- function(input, output) {
       theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
       labs(title = "Prevalence by Location-Time -- Based on Interquartile Range") + labs(x = "Time Unit") + labs(y = "Prevalence")
     
-    
-    
-    
-    
+   
     
     ## third plot, d3, is a scatter plot of  weighted patient size (prevalence) with jittered points in the background. 
     ##A smoothed regression line shows the overall trend in prevalence of selected cohort of patients over time.
@@ -203,12 +234,61 @@ server <- function(input, output) {
     grid.arrange(d1, d2, d3, d4, nrow=4)
     
   })
-  
-  
-  output$myplot3 <- renderPlot({
-##the treemap in this plot shows u_Times in which standard deviation ratio (u_Time's std/all u_Times' std) is bigger than or equal to an entry from the UI 
-#add std to a new table, dat2
+
+  output$myplot0 <- renderPlotly({
+
+    z3 <- aggregate (dat0()$prevalence, by=list(dat0()$u_Time), FUN=mean,na.rm = TRUE)
+    z3[is.na(z3)] <- 0
+    names(z3)[1]<-paste("u_Time")
+    names(z3)[2]<-paste("mean")
+    datt <- merge(dat0(), z3, by="u_Time")
     
+    st.err <- function(x, na.rm=FALSE) {
+      if(na.rm==TRUE) x <- na.omit(x)
+      sd(x)/sqrt(length(x))
+    }
+    z2 <- aggregate (dat0()$prevalence, by=list(dat0()$u_Time), FUN=st.err,na.rm = TRUE)
+    z2[is.na(z2)] <- 0
+    names(z2)[1]<-paste("u_Time")
+    names(z2)[2]<-paste("st.err")
+    datt <- merge(datt, z2, by="u_Time")
+    
+    p <- ggplot(datt, aes(x=as.factor(u_Time), y=prevalence)) + 
+      geom_jitter(width = 0.2, alpha = 0.3) +
+      geom_boxplot(aes(), outlier.shape = 1, alpha = 0.5) +
+      scale_fill_continuous(low="gold", high="red",guide = FALSE) +
+      geom_ribbon(aes(ymin = (mean - st.err), ymax = (mean + st.err)), fill = "blue") +
+      geom_point(aes(y = mean), col = "red", shape = 95, size = 3, alpha = 0.5)+
+      facet_wrap(~factor, scale="free_x",nrow = 1, switch = "x") +
+      theme(axis.text.x=element_text(colour="white", size = 0.1)) +
+      theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
+      labs(title = "Box Plot of Prevalence by Location-Time") + labs(x = "")+labs(y = "Prevalence")
+    
+    (gg <- ggplotly(p))
+  })
+  
+  
+ 
+  output$myplot00 <- renderPlotly({
+
+    q <- ggplot(dat0(), aes(u_Time)) +
+      geom_point(data = dat0(), aes(x = u_Time, y = prevalence, col = u_Loc, size = log(population), legend = F), alpha = 0.5)+ 
+      scale_colour_hue(guide = FALSE)+guides(fill=FALSE)+
+      scale_size(guide = FALSE)+ theme(legend.position="none") +
+      facet_wrap(~factor, scale="free_x",nrow = 1, switch = "x") +
+      theme(axis.text.x=element_text(colour="white", size = 0.1)) +
+      theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
+      labs(title = "Scatter Plot of Prevalence by Location-Time") + labs(x = "Time Unit") + labs(y = "Prevalence")
+    (gg <- ggplotly(q))
+    
+  })
+  
+  
+  
+  output$myplot3 <- renderPlotly({
+## Density plots of the selected variable. 
+
+  #to be able to pass the variable name to ggplot, you'll have to write it as a function.
     myplot = function(col) {
       ggplot(datden(), aes_string(x = col, fill = "factor", colour = "factor")) + 
         geom_density(alpha = 0.4, show.legend = FALSE) +
@@ -217,8 +297,8 @@ server <- function(input, output) {
         ggtitle(paste0("Density distribution of ",input$varden2," by year", sep = "")) +
         facet_wrap(~factor)
     }
-    myplot(input$varden2)
-    
+    p <- myplot(input$varden2)
+    (gg <- ggplotly(p))
   })
   
 #   output$text1 <- renderText({ 
@@ -237,7 +317,7 @@ server <- function(input, output) {
       x <- unique(dat2$u_Loc)[i]
       idX <-  which(dat2$u_Loc == x)
       xdata <- dat2[idX,]
-      fit <- lm(xdata$patient~xdata$u_Time,data=xdata)
+      fit <- lm(patient~poly(u_Time+population, 1, raw=TRUE),data=xdata)
       predObj <- predict(fit,newdata=xdata,interval="confidence"
                          , level = 0.95,type="response")
       dat2$prd[idX] <- predObj[,1]
@@ -251,8 +331,6 @@ server <- function(input, output) {
     
     
     ###polynomia model
-    #   dat2 <- dat()
-    #   xdata <- dat()
     dat2$prd2 <- 0
     dat2$lowSE2 <- 0
     dat2$highSE2 <- 0
@@ -260,7 +338,7 @@ server <- function(input, output) {
       x <- unique(dat2$u_Loc)[i]
       idX <-  which(dat2$u_Loc == x)
       xdata <- dat2[idX,]
-      fit2 <- lm(patient~poly(u_Time,input$slider5, raw=TRUE),data=xdata)
+      fit2 <- lm(patient~poly(u_Time+population, input$slider5, raw=TRUE),data=xdata)
       predObj2 <- data.frame(predict(fit2,newdata=xdata,interval="confidence",
                                      level = 0.95,type="response",se = TRUE))
       dat2$prd2[idX] <- predObj2[,1]
@@ -271,10 +349,10 @@ server <- function(input, output) {
     dat2$anom2 <- ifelse(dat2$patient>dat2$highSE2 | dat2$patient<dat2$lowSE2, 1, 0)
     datanom2 <- subset(dat2, dat2$anom2 == 1)
     
-  p1 <-  ggplot(dat2, aes(u_Time,log10(patient), col = u_Loc)) +
+  p1 <-  ggplot(dat2, aes(u_Time,log10(patient), col = u_Loc,size = log10(population))) +
       geom_point(alpha = 0.7, show.legend = FALSE) + 
-      geom_point(data = datanom, aes(u_Time, log10(patient)), shape = 21, colour = "black", fill = "white", size = 5, stroke = 1, alpha = 0.8) +
-      geom_point(data = datanom2, aes(u_Time, log10(patient)), colour="red", size = 3.5, alpha = 0.8) +
+      geom_point(data = datanom, aes(u_Time, log10(patient)), shape = 21, colour = "black", fill = "white", size = 7, stroke = 1, alpha = 0.8) +
+      geom_point(data = datanom2, aes(u_Time, log10(patient)), colour="red", size = 5.5, alpha = 0.8) +
       theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
     xlab("") + ylab(paste0("LOG Number of Patient with ",input$varREG, sep ="")) + 
       ggtitle("Regression-based Anomaly Detection") +
@@ -282,9 +360,9 @@ server <- function(input, output) {
     theme(axis.text.x=element_text(colour="white", size = 0.1)) 
 
   p2 <-  ggplot(dat2, aes(u_Time,log10(patient), label = u_Loc)) +
-    geom_label(aes(fill = factor(u_Loc)), colour = "white", fontface = "plain", size = 2, show.legend = FALSE, alpha = 0.2)+
+    geom_label(aes(fill = factor(u_Loc)), colour = "white", fontface = "plain", size = 3, show.legend = FALSE, alpha = 0.2)+
     # geom_label(data = datanom, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 2, show.legend = FALSE, alpha = 0.6)+
-    geom_label(data = datanom2, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 2.5, show.legend = FALSE, alpha = 0.95)+
+    geom_label(data = datanom2, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 3.5, show.legend = FALSE, alpha = 0.95)+
     theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
     xlab("Time Unit") + ylab(paste0("LOG Number of Patient with ",input$varREG, sep ="")) + 
     facet_wrap(~u_Time, scale="free_x", nrow = 1, switch = "x")  +
@@ -292,17 +370,7 @@ server <- function(input, output) {
   
   grid.arrange(p1, p2, nrow=2)
     
-#     par(mfrow=c(2,1), oma = c(1,0,1,0) ,mar = c(1.5,0,2,0))
-# 
-#     ##regular plot of data with linear regression method to show outliers
-#     plot(dat2$patient~dat2$u_Time,  xlab="", ylab="Patient", type = "b" , main = "Outliers with Linear Regression", 
-#          xlim=c(min(input$sliderREG),max(input$sliderREG)), pch=0) ##
-#     points(datanom$patient~datanom$u_Time, col = "red", pch=15)
-# 
-#     ##regular plot of data with polynomial regression method to show outliers
-#     plot(dat2$patient~dat2$u_Time,  xlab="u_Time", ylab="Patient", type = "b" , main = "Outliers with Polynomial Regression", 
-#          xlim=c(min(input$sliderREG),max(input$sliderREG)), pch=1) ##add x and y mins later-- 
-#     points(datanom2$patient~datanom2$u_Time, col = "red", pch=19)
+
 
   })
   
@@ -317,7 +385,7 @@ server <- function(input, output) {
       x <- unique(datTB$u_Loc)[i]
       idX <-  which(datTB$u_Loc == x)
       xdataTB <- datTB[idX,]
-      fitTB <- lm(xdataTB$patient~xdataTB$u_Time,data=xdataTB)
+      fitTB <- lm(patient~poly(u_Time+population,1, raw=TRUE),data=xdataTB)
       predObjTB <- predict(fitTB,newdata=xdataTB,interval="confidence"
                          , level = 0.95,type="response")
       datTB$prdTB[idX] <- predObjTB[,1]
@@ -333,7 +401,7 @@ server <- function(input, output) {
       x <- unique(datTB$u_Loc)[i]
       idX <-  which(datTB$u_Loc == x)
       xdataTB <- datTB[idX,]
-      fitTB2 <- lm(patient~poly(u_Time,input$slider5, raw=TRUE),data=xdataTB)
+      fitTB2 <- lm(patient~poly(u_Time+population,input$slider5, raw=TRUE),data=xdataTB)
       predObjTB2 <- data.frame(predict(fitTB2,newdata=xdataTB,interval="confidence",
                                      level = 0.95,type="response",se = TRUE))
       datTB$prdTB2[idX] <- predObjTB2[,1]
@@ -341,9 +409,9 @@ server <- function(input, output) {
       datTB$highSETB2[idX] <- predObjTB2[,3]
     }
     
-    datTB$LINEAR <- ifelse(datTB$patient>datTB$highSETB | datTB$patient<datTB$lowSETB, 1, 0)
+    datTB$LINEAR <- ifelse(datTB$patient>datTB$highSETB | datTB$patient<datTB$lowSETB, "Anomaly", "-")
 
-    datTB$POLY <- ifelse(datTB$patient>datTB$highSETB2 | datTB$patient<datTB$lowSETB2, 1, 0)
+    datTB$POLY <- ifelse(datTB$patient>datTB$highSETB2 | datTB$patient<datTB$lowSETB2, "Anomaly", "-")
 
     #datTB
     diff<- subset(datTB,datTB$LINEAR != datTB$POLY)
