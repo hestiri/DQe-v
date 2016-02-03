@@ -66,7 +66,7 @@ Figure 1. The Variability Preview Tab
 ### The Exploratory Analysis Tab
 The **Exploratory Analysis** tab provides four visualizations for the user to explore potential variability (or lack thereof) in the data. On the left-hand side meneu, the user can select a unit condition (or a set of conditions) from column `u_Cond` in the source data. The UI automatically recognizes and lists unqiue values in `u_Cond`. The user can also select a time unit range to zoom in on a particular time period or zoom out to see the overall trend. These settings feed the necessary data to generate the four visualizations for exploring variability (Figure 1). 
 
-<img src="graphics/tab2-menu.png" style="height:350px;">
+<img src="graphics/tab2-menu.png" style="height:380px;">
 
 Figure 1. The Exploratory Analysis Tab's Menu Bar
 
