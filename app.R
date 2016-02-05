@@ -361,7 +361,6 @@ server <- function(input, output) {
 
   p2 <-  ggplot(dat2, aes(u_Time,log10(patient), label = u_Loc)) +
     geom_label(aes(fill = factor(u_Loc)), colour = "white", fontface = "plain", size = 3, show.legend = FALSE, alpha = 0.2)+
-    # geom_label(data = datanom, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 2, show.legend = FALSE, alpha = 0.6)+
     geom_label(data = datanom2, aes(fill = factor(u_Loc)), colour = "white", fontface = "bold", size = 3.5, show.legend = FALSE, alpha = 0.95)+
     theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", hjust=0)) +
     xlab("Time Unit") + ylab(paste0("LOG Number of Patient with ",input$varREG, sep ="")) + 
@@ -436,5 +435,4 @@ server <- function(input, output) {
   }
 
 shinyApp(ui, server)
-
 
