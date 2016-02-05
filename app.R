@@ -114,7 +114,7 @@ ui <- navbarPage(title = "Variability Explorer Tool",
 
                               helpText("Select the smoothing degree for the regression model."),
                               sliderInput("slider5", "Select Polynomial Degree",
-                                          min =1, max = 5, value = 1, step = 1),
+                                          min =1, max = 4, value = 1, step = 1),
                               br(),
                               helpText("The table highlights location and time units in which results of the linear model
                                        and the polynomial model do not conform.")
@@ -317,7 +317,7 @@ server <- function(input, output) {
       x <- unique(dat2$u_Loc)[i]
       idX <-  which(dat2$u_Loc == x)
       xdata <- dat2[idX,]
-      fit <- lm(patient~poly(u_Time+population, 1, raw=TRUE),data=xdata)
+      fit <- lm(patient~poly(u_Time, raw=T)+poly(population, raw=T),data=xdata)
       predObj <- predict(fit,newdata=xdata,interval="confidence"
                          , level = 0.95,type="response")
       dat2$prd[idX] <- predObj[,1]
@@ -338,14 +338,14 @@ server <- function(input, output) {
       x <- unique(dat2$u_Loc)[i]
       idX <-  which(dat2$u_Loc == x)
       xdata <- dat2[idX,]
-      fit2 <- lm(patient~poly(u_Time+population, input$slider5, raw=TRUE),data=xdata)
+      fit2 <- lm(patient~poly(u_Time, input$slider5, raw=T)+poly(population, input$slider5, raw=T),data=xdata)
       predObj2 <- data.frame(predict(fit2,newdata=xdata,interval="confidence",
                                      level = 0.95,type="response",se = TRUE))
       dat2$prd2[idX] <- predObj2[,1]
       dat2$lowSE2[idX] <- predObj2[,2]
       dat2$highSE2[idX] <- predObj2[,3]
     }
-    
+    ?polym
     dat2$anom2 <- ifelse(dat2$patient>dat2$highSE2 | dat2$patient<dat2$lowSE2, 1, 0)
     datanom2 <- subset(dat2, dat2$anom2 == 1)
     
@@ -371,7 +371,6 @@ server <- function(input, output) {
   grid.arrange(p1, p2, nrow=2)
     
 
-
   })
   
   output$mytable <- renderDataTable({
@@ -385,7 +384,7 @@ server <- function(input, output) {
       x <- unique(datTB$u_Loc)[i]
       idX <-  which(datTB$u_Loc == x)
       xdataTB <- datTB[idX,]
-      fitTB <- lm(patient~poly(u_Time+population,1, raw=TRUE),data=xdataTB)
+      fitTB <- lm(patient~poly(u_Time, raw=T)+poly(population,  raw=T),data=xdataTB)
       predObjTB <- predict(fitTB,newdata=xdataTB,interval="confidence"
                          , level = 0.95,type="response")
       datTB$prdTB[idX] <- predObjTB[,1]
@@ -401,7 +400,7 @@ server <- function(input, output) {
       x <- unique(datTB$u_Loc)[i]
       idX <-  which(datTB$u_Loc == x)
       xdataTB <- datTB[idX,]
-      fitTB2 <- lm(patient~poly(u_Time+population,input$slider5, raw=TRUE),data=xdataTB)
+      fitTB2 <- lm(patient~poly(u_Time, input$slider5, raw=T)+poly(population, input$slider5, raw=T),data=xdataTB)
       predObjTB2 <- data.frame(predict(fitTB2,newdata=xdataTB,interval="confidence",
                                      level = 0.95,type="response",se = TRUE))
       datTB$prdTB2[idX] <- predObjTB2[,1]

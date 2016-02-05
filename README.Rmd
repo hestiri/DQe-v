@@ -64,37 +64,47 @@ In addition to the prevalence value at different location units, the size of poi
 Figure 1. The Variability Preview Tab
 
 ### The Exploratory Analysis Tab
-The **Exploratory Analysis** tab provides four visualizations for the user to explore potential variability (or lack thereof) in the data. On the left-hand side meneu, the user can select a unit condition (or a set of conditions) from column `u_Cond` in the source data. The UI automatically recognizes and lists unqiue values in `u_Cond`. The user can also select a time unit range to zoom in on a particular time period or zoom out to see the overall trend. These settings feed the necessary data to generate the four visualizations for exploring variability (Figure 1). 
+The **Exploratory Analysis** tab provides four visualizations for the user to explore potential variability (or lack thereof) in the data. On the left-hand side meneu, the user can select a unit condition (or a set of conditions) from column `u_Cond` in the source data. The UI automatically recognizes and lists unqiue values in `u_Cond`. The user can also select a time unit range to zoom in on a particular time period or zoom out to see the overall trend. These settings feed the necessary data to generate the four visualizations for exploring variability (Figure 2). 
 
 <img src="graphics/tab2-menu.png" style="height:380px;">
 
-Figure 1. The Exploratory Analysis Tab's Menu Bar
+Figure 2. The Exploratory Analysis Tab's Menu Bar
 
 The X axis on all four graphics is the time unit, `u_Time`, whereas the Y uses prevalence of the condition of interest (`u_Cond`) within the selected time period.
 
 #### Prevalence Box Plots
-The first two graphics in this tab (Prevalence by Location-Time) are ordinary Box plots of the `prevalence` variable, which show distribution of prevalence (i.e., patient divided by population) of the selected condition among units of locations across the selected time period. A scatter plot with jittered data points are also overlayed in the background. Box plots at any specific time unit illustrate maximum, minimum, first and third quartiles, and median for the prevalence of the selected unit condition. In the example dataset, unit of time is year. The two graphics show variations in annual prevalence of conditions E and A between years 1999 and 2014. Box plots are conventionally used to visualize variability. However, to add more to these plots, users can highlight time units in which Interquartile Range (first plot) and Standard Deviation (second plot) are within a certain range. This interactive function allows users to highlight particular time units that have higher Interquartile Range or Standard Deviation than the average over the selected time period. In figure 1, for example, years in which Interquartile Range and Standard Deviation for conditions E and A are between one to 6 times more than the average Interquartile Range and Standard Deviation within 1999 and 2014 are highlighted. A continous color spectrum from gold to red is dynamically assigned to the minimum and maximum of selected ranges for better visual presentation of variability.
+The first two graphics in this tab (Prevalence by Location-Time) are ordinary Box plots of the `prevalence` variable, which show distribution of prevalence (i.e., patient divided by population) of the selected condition among units of locations across the selected time period. A scatter plot with jittered data points are also overlayed in the background. Box plots at any specific time unit illustrate maximum, minimum, first and third quartiles, and median for the prevalence of the selected unit condition. In the example dataset, unit of time is year. The two graphics show variations in annual prevalence of conditions G, H, and B between years 1998 and 2013. Box plots are conventionally used to visualize variability. However, to add more to these plots, users can highlight time units in which Interquartile Range (first plot) and Standard Deviation (second plot) are within a certain range. This interactive function allows users to highlight particular time units that have higher Interquartile Range or Standard Deviation than the average over the selected time period. In figure 2, for example, years in which Interquartile Range and Standard Deviation for conditions G, H, and B are between one to two and half times more than the average Interquartile Range and between two and half and six and half more than the average Standard Deviation within 1998 and 2013 are highlighted. A continous color spectrum from gold to red is dynamically assigned to the minimum and maximum of selected ranges for better visual presentation of variability.
 
 
 ![alt text](graphics/tab2.png)
-Figure 2. The Exploratory Analysis Tab's Plots
+Figure 3. The Exploratory Analysis Tab's Plots
 
-#### Scatter Plots
+#### Scatter Plots Tab
 Two scatter plots complement information provided by Box plots. Plot number three (Prevalence Over Time) adds a smoothed regression line with confidence intervals to the scatter plot of prevalence over time unit. The regression line illustrates the overall variability pattern. The confidence interval visually represents data points across time units, helping the users make a more informed decision about variability conveyed through the Box plots. 
 
-Last plot, Overall Patient Population Over Time, is a scater plot of the overall population within location units (e.g., primary care clinics), regardless of condition unit. This plot illustrates the changing pattern in population seen at location units within the selected time units. For example, in Figure 1, high variability between years 2001 and 2005 can be related to the relatively smaller population size across location units within those years.
+Last plot, Overall Patient Population Over Time, is a scater plot of the overall population within location units (e.g., primary care clinics), regardless of condition unit. This plot illustrates the changing pattern in population seen at location units within the selected time units. For example, in Figure 2, high variability between years 2001 and 2005 can be related to the relatively smaller population size across location units.
   
-## The Density Plots
+### The Density Plots Tab
  
-To complement the visualizations provided in **Exploratory Analysis**, the **Density Plots** tab displays smoothed probability density function of `prevalence` variable for the selected condition and time range (Figure 2). Density plots show changes in distribution of 
+To complement the visualizations provided in **Exploratory Analysis**, the **Density Plots** tab displays smoothed probability density function of a selected variable for a selected condition and time range (Figure 3). This tab allows the users to look at changes in distribution of their variable of interest, be it `prevalence`, `patient`, or `population`. Allowing the user to change the variable of interest will provide a more wholistic preview of data distribution.
+
+<img src="graphics/tab3-menu.png" style="height:380px;">
+
+Figure 4. The Density Plots Tab's Menu Bar
+
+
+Figure 5 illustrates annual probability distribution functions for `Condition_B` between years 2004 and 2013. The X axis in each plot represents the selected variable from the UI, which in this example is `prevalence` and the Y axis represents density. In the example illustration in Figure 5, distribution of prevalence values is for the most part skewed to the left. In 2010, the plot shows that there was a peak observed in a relatively prevalence value.
+
 
 ![alt text](graphics/tab3.png)
-Figure 3. The Exploratory Analysis Tab
+Figure 5. Visualization of probability density functions in Density Plots Tab
 
 
 ## Regression-based Analysis
-"By default, with raw = FALSE, poly() computes an orthogonal polynomial. It internally sets up the model matrix with the raw coding x, x^2, x^3, ... first and then scales the columns so that each column is orthogonal to the previous ones. This does not change the fitted values but has the advantage that you can see whether a certain order in the polynomial significantly improves the regression over the lower orders."
+The **Regression-based Analysis** tab uses simple predictive analytics to detect data points (i.e., single observations within a unit condition, time, and location) that are statistically above or below what would be their expacted value given data points in proceeding and preceeding time units. These data points are marked as anomaly and displayed on two visualizations. Calculation of expected values are based on a series of raw polynomial regression models that predict prevalence with time unit and population for each location units, using `poly()` in R. The regression function internally sets up the model matrix with the raw coding x, x^2, x^3, ... "
 
+"The orthogonal polynomial is summarized by the coefficients, which can be used to evaluate it via the three-term recursion given in Kennedy & Gentle (1980, pp. 343–4), and used in the predict part of the code."
+The function poly is useful if you want to get a polynomial of high degree, because it avoids explicitly write the formula. If we specify raw=TRUE, the two methods provide the same output, but if we do not specify raw=TRUE (or rgb(153, 0, 0);">raw=F), the function poly give us the values of the beta parameters of an orthogonal polynomials, which is different from the general formula I wrote above, although the models are both effective."
 
 ![alt text](graphics/tab4.png)
 Figure 4. The Exploratory Analysis Tab
