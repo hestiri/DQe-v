@@ -101,10 +101,13 @@ Figure 5. Visualization of probability density functions in Density Plots Tab
 
 
 ## Regression-based Analysis
-The **Regression-based Analysis** tab uses simple predictive analytics to detect data points (i.e., single observations within a unit condition, time, and location) that are statistically above or below what would be their expacted value given data points in proceeding and preceeding time units. These data points are marked as anomaly and displayed on two visualizations. Calculation of expected values are based on a series of raw polynomial regression models that predict prevalence with time unit and population for each location units, using `poly()` in R. The regression function internally sets up the model matrix with the raw coding x, x^2, x^3, ... "
+The **Regression-based Analysis** tab uses simple predictive analytics to detect data points (i.e., single observations within a unit condition, time, and location) that are statistically above or below what would be their expacted value given data points in proceeding and preceeding time units. These data points are marked as anomaly and displayed on two visualizations. Calculation of expected values are based on a series of raw polynomial regression models that predict prevalence with time unit and population for each location units, using `poly()` in R. The regression function internally sets up the model matrix with the raw coding x, x^2, ..., x^n, when x is the variable of interest and n is the degree of the polynomial regression. 
 
-"The orthogonal polynomial is summarized by the coefficients, which can be used to evaluate it via the three-term recursion given in Kennedy & Gentle (1980, pp. 343–4), and used in the predict part of the code."
-The function poly is useful if you want to get a polynomial of high degree, because it avoids explicitly write the formula. If we specify raw=TRUE, the two methods provide the same output, but if we do not specify raw=TRUE (or rgb(153, 0, 0);">raw=F), the function poly give us the values of the beta parameters of an orthogonal polynomials, which is different from the general formula I wrote above, although the models are both effective."
+Accordingly, the regression models are estimated using the following function:
+$$ prevalence = \sum_{i=1}^n uTime^i + \sum_{i=1}^n population^i$$
+
+The application uses polynomial regression as a smoothing mechanism. That is, the users can set up the smoothing degree in the UI (maximum has been set to 4) and compare the difference in anomalies detected via a linear line and a smoother polynomial line. 
+
 
 ![alt text](graphics/tab4.png)
 Figure 4. The Exploratory Analysis Tab
