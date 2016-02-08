@@ -71,6 +71,7 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                  tabPanel("       Density Plots      ",
                           sidebarLayout(
                             sidebarPanel(
+                              helpText("Select the condition(s) of interest"),
                               selectizeInput(
                                 'varden', label = "Select Condition", choices = unique(datUI$u_Cond), options = list(placeholder = 'select condition(s) of interest'),
                                 selected = unique(datUI$u_Cond)[1], 
@@ -101,8 +102,9 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                  tabPanel("Regression-Based Analysis",
                           sidebarLayout(
                             sidebarPanel(
+                              helpText("Select the condition(s) of interest"),
                               selectizeInput(
-                                'varREG', label = "BB", choices = unique(datUI$u_Cond), options = list(placeholder = 'select condition(s) of interest'),
+                                'varREG', label = "Select Condition", choices = unique(datUI$u_Cond), options = list(placeholder = 'select condition(s) of interest'),
                                 selected = unique(datUI$u_Cond)[1], 
                                 multiple = T
                               ),
