@@ -113,13 +113,19 @@ ui <- navbarPage(title = "Variability Explorer Tool",
                               sliderInput("sliderREG", "Select Time Unit Range",
                                           min = 1980, max = 2014, value = c(2004, 2013)),
                               br(),
-
-                              helpText("Select the smoothing degree for the regression model."),
-                              sliderInput("slider5", "Select Polynomial Degree",
-                                          min =1, max = 4, value = 1, step = 1),
+                              
+                              helpText("Select the smoothing degree for the regression model 1."),
+                              sliderInput("slider50", "Select Polynomial Degree",
+                                          min =1, max = 5, value = 1, step = 1),
                               br(),
-                              helpText("The table highlights location and time units in which results of the linear model
-                                       and the polynomial model do not conform.")
+                              
+
+                              helpText("Select the smoothing degree for the regression model 2."),
+                              sliderInput("slider5", "Select Polynomial Degree",
+                                          min =1, max = 5, value = 1, step = 1),
+                              br(),
+                              helpText("The table highlights location and time units in which there is consensus betweeb
+                                       the results obtained from the two polynomial models.")
                               
                             ),
                             mainPanel(
@@ -319,9 +325,9 @@ server <- function(input, output) {
       x <- unique(dat2$u_Loc)[i]
       idX <-  which(dat2$u_Loc == x)
       xdata <- dat2[idX,]
-      fit <- lm(patient~poly(u_Time, raw=T)+poly(population, raw=T),data=xdata)
-      predObj <- predict(fit,newdata=xdata,interval="confidence"
-                         , level = 0.95,type="response")
+      fit <- lm(patient~poly(u_Time, input$slider50, raw=T)+poly(population, input$slider50, raw=T),data=xdata)
+      predObj <- data.frame(predict(fit,newdata=xdata,interval="confidence",
+                                    level = 0.95,type="response",se = TRUE))
       dat2$prd[idX] <- predObj[,1]
       dat2$lowSE[idX] <- predObj[,2]
       dat2$highSE[idX] <- predObj[,3]
@@ -347,7 +353,7 @@ server <- function(input, output) {
       dat2$lowSE2[idX] <- predObj2[,2]
       dat2$highSE2[idX] <- predObj2[,3]
     }
-    ?polym
+    
     dat2$anom2 <- ifelse(dat2$patient>dat2$highSE2 | dat2$patient<dat2$lowSE2, 1, 0)
     datanom2 <- subset(dat2, dat2$anom2 == 1)
     
@@ -385,9 +391,9 @@ server <- function(input, output) {
       x <- unique(datTB$u_Loc)[i]
       idX <-  which(datTB$u_Loc == x)
       xdataTB <- datTB[idX,]
-      fitTB <- lm(patient~poly(u_Time, raw=T)+poly(population,  raw=T),data=xdataTB)
-      predObjTB <- predict(fitTB,newdata=xdataTB,interval="confidence"
-                         , level = 0.95,type="response")
+      fitTB <- lm(patient~poly(u_Time, input$slider50, raw=T)+poly(population, input$slider50, raw=T),data=xdataTB)
+      predObjTB <- data.frame(predict(fitTB,newdata=xdataTB,interval="confidence",
+                                      level = 0.95,type="response",se = TRUE))
       datTB$prdTB[idX] <- predObjTB[,1]
       datTB$lowSETB[idX] <- predObjTB[,2]
       datTB$highSETB[idX] <- predObjTB[,3]
@@ -409,13 +415,13 @@ server <- function(input, output) {
       datTB$highSETB2[idX] <- predObjTB2[,3]
     }
     
-    datTB$LINEAR <- ifelse(datTB$patient>datTB$highSETB | datTB$patient<datTB$lowSETB, "Anomaly", "-")
+    datTB$POLY1 <- ifelse(datTB$patient>datTB$highSETB | datTB$patient<datTB$lowSETB, "Anomaly", "-")
 
-    datTB$POLY <- ifelse(datTB$patient>datTB$highSETB2 | datTB$patient<datTB$lowSETB2, "Anomaly", "-")
+    datTB$POLY2 <- ifelse(datTB$patient>datTB$highSETB2 | datTB$patient<datTB$lowSETB2, "Anomaly", "-")
 
     #datTB
-    diff<- subset(datTB,datTB$LINEAR != datTB$POLY)
-    diff[,.(u_Loc, u_Time, LINEAR, POLY)]
+    cons <- subset(datTB,datTB$POLY1 == "Anomaly" & datTB$POLY2 == "Anomaly")
+    cons[,.(u_Loc, u_Time, POLY1, POLY2)]
 
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   # })
