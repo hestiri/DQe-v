@@ -108,7 +108,7 @@ $$ prevalence = \sum_{i=1}^n uTime^i + \sum_{j=1}^n population^j$$
 
 where n is the degree of polynomial regression.
 
-The application uses polynomial regression as a smoothing mechanism. That is, the users can set up the smoothing degree in the UI (maximum has been set to 4) and compare the difference in anomalies detected via a linear line and a smoother polynomial line. As illustrated in Figure 6, the regression based analysis produces three outputs: two plots and a difference table. 
+The application uses polynomial regression as a smoothing mechanism. That is, the users can set up the smoothing degree in the UI (maximum has been set to 5) and compare the difference in anomalies detected via two user-defined polynomial functions. As illustrated in Figure 6, the regression based analysis produces three outputs: two plots and a difference table. 
 
 
 ![alt text](graphics/tab4.png)
