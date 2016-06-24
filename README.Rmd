@@ -95,7 +95,7 @@ Figure 4. The Density Plots Tab's Menu Bar
 Figure 5 illustrates annual probability distribution functions for `Condition_B` between years 2004 and 2013. The X axis in each plot represents the selected variable from the UI, which in this example is `prevalence` and the Y axis represents density. In the example illustration in Figure 5, distribution of prevalence values is for the most part skewed to the left. In 2010, the plot shows that there was a peak observed in a relatively prevalence value.
 
 
-![alt text](graphics/tab3.png)
+![alt text](graphics/DQe-v-3.gif)
 Figure 5. Visualization of probability density functions in Density Plots Tab
 
 
