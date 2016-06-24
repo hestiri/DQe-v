@@ -91,6 +91,7 @@ Figure 4 illustrates annual probability distribution functions for `Condition_B`
 
 
 ![alt text](graphics/DQe-v-3.gif)
+
 Figure 4. Visualization of probability density functions in Density Plots Tab
 
 
