@@ -85,18 +85,13 @@ Last plot, Overall Patient Population Over Time, is a scater plot of the overall
   
 ### The Density Plots Tab
  
-To complement the visualizations provided in **Exploratory Analysis**, the **Density Plots** tab displays smoothed probability density function of a selected variable for a selected condition and time range (Figure 3). This tab allows the users to look at changes in distribution of their variable of interest, be it `prevalence`, `patient`, or `population`. Allowing the user to change the variable of interest will provide a more wholistic preview of data distribution.
+To complement the visualizations provided in **Exploratory Analysis**, the **Density Plots** tab displays smoothed probability density function of a selected variable for a selected condition and time range (Figure 4). This tab allows the users to look at changes in distribution of their variable of interest, be it `prevalence`, `patient`, or `population`. Allowing the user to change the variable of interest will provide a more wholistic preview of data distribution.
 
-<img src="graphics/tab3-menu.png" style="height:380px;">
-
-Figure 4. The Density Plots Tab's Menu Bar
-
-
-Figure 5 illustrates annual probability distribution functions for `Condition_B` between years 2004 and 2013. The X axis in each plot represents the selected variable from the UI, which in this example is `prevalence` and the Y axis represents density. In the example illustration in Figure 5, distribution of prevalence values is for the most part skewed to the left. In 2010, the plot shows that there was a peak observed in a relatively prevalence value.
+Figure 4 illustrates annual probability distribution functions for `Condition_B` between years 2004 and 2013. The X axis in each plot represents the selected variable from the UI, which in this example is `prevalence` and the Y axis represents density. In the example illustration in Figure 5, distribution of prevalence values is for the most part skewed to the left. In 2010, the plot shows that there was a peak observed in a relatively prevalence value.
 
 
 ![alt text](graphics/DQe-v-3.gif)
-Figure 5. Visualization of probability density functions in Density Plots Tab
+Figure 4. Visualization of probability density functions in Density Plots Tab
 
 
 ## Regression-based Analysis
@@ -107,12 +102,12 @@ $$ prevalence = \sum_{i=1}^n uTime^i + \sum_{j=1}^n population^j$$
 
 where n is the degree of polynomial regression.
 
-The application uses polynomial regression as a smoothing mechanism. That is, the users can set up the smoothing degree in the UI (maximum has been set to 5) and compare the difference in anomalies detected via two user-defined polynomial functions. As illustrated in Figure 6, the regression based analysis produces three outputs: two plots and a difference table. 
+The application uses polynomial regression as a smoothing mechanism. That is, the users can set up the smoothing degree in the UI (maximum has been set to 5) and compare the difference in anomalies detected via two user-defined polynomial functions. As illustrated in Figure 5, the regression based analysis produces three outputs: two plots and a difference table. 
 
 
 ![alt text](graphics/DQe-v-4.gif)
 
-Figure 6. Output of the Regression-based Analysis
+Figure 5. Output of the Regression-based Analysis
 
 First plot from top is a scatter plot of log of number of patients with the selected condition (i.e., patient) at each unit location and time. Dots are color coded by unit location, and similar to the scatter plot in figure 1, size of the dots represent log of total population at each clinic and time unit. On top of the prevalence scatter plot location units that have been detected as anomaly using polynomial regression estimates are highlighted. White dots with black stroke line are anomalies detected with linear regression models (where the actual prevalence value at location x and time y is statistically different from the estimated values given all data points for location x within the selected time unit range). Red dots on top of white dots show anomalies detected with polynomial regression model. The default is set to 1, so that red dots overlap the white dots. Once the user increases the polynomial degree (i.e., moves towards smoother regression lines), less red dots are expected. Second plot, which has the same x and y axes as the first plot, only highlights the location names detected as anomaly with polynomial models. The data table shows the time and location units where the outcomes of linear and polynomial models do not conform with each other. 
 
