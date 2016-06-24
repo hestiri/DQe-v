@@ -16,8 +16,8 @@ if (!require("plotly")) install.packages('plotly')
 
 
 # Reading the source data.
-## set the source location:
-src <- "~/Desktop/testdata.csv"
+## set the source data location:
+src <- "testdata.csv"
 ## read the data from source
 srcdt <- fread(src)
 ## look at data structure
