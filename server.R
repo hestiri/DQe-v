@@ -1,6 +1,6 @@
 ####################################
 ########### Reading the source file
-
+pdf(NULL)
 ####  Install and load the required packages
 if (!require("data.table")) install.packages('data.table',repos = "http://cran.us.r-project.org")
 if (!require("shiny")) install.packages('shiny',repos = "http://cran.us.r-project.org")
@@ -10,6 +10,8 @@ if (!require("dplyr")) install.packages('dplyr',repos = "http://cran.us.r-projec
 if (!require("shinydashboard")) install.packages('shinydashboard',repos = "http://cran.us.r-project.org")
 if (!require("shinythemes")) install.packages('shinythemes',repos = "http://cran.us.r-project.org")
 if (!require("plotly")) install.packages('plotly',repos = "http://cran.us.r-project.org")
+if (!require("DT")) install.packages('DT',repos = "http://cran.us.r-project.org")
+
 
 path <- getwd()
 setwd(paste0(path))
@@ -41,6 +43,8 @@ shinyServer(
   datREG <- reactive({
     subset(srcdt, srcdt$u_Time >= min(input$sliderREG) & srcdt$u_Time <= max(input$sliderREG) & srcdt$u_Cond ==input$varREG)
   })
+  
+  
   output$myplot <- renderPlot({
     ##do a bunch of processes on data to calculate interquartile range (iqr), standard deviation (sd), mean of total population (mean)
     ### and mean of patient within each u_Time (meanP)
@@ -267,65 +271,75 @@ shinyServer(
     
   })
   
-  output$mytable <- renderDataTable({
-    datTB <- datREG()
-    xdataTB <- datREG()
-    datTB$prdTB <- 0
-    datTB$lowSETB <- 0
-    datTB$highSETB <- 0
+  output$mytable <- DT::renderDataTable({
+    dat3 <- datREG()
+    xdata3 <- datREG()
+    dat3$prd <- 0
+    dat3$lowSE <- 0
+    dat3$highSE <- 0
     ##for loop begins to calculate linear regression models for each u_Loc
-    for(i in 1:length(unique(datTB$u_Loc))){
-      x <- unique(datTB$u_Loc)[i]
-      idX <-  which(datTB$u_Loc == x)
-      xdataTB <- datTB[idX,]
-      fitTB <- lm(patient~poly(u_Time, input$slider50, raw=T)+poly(population, input$slider50, raw=T),data=xdataTB)
-      predObjTB <- data.frame(predict(fitTB,newdata=xdataTB,interval="confidence",
-                                      level = 0.95,type="response",se = TRUE))
-      datTB$prdTB[idX] <- predObjTB[,1]
-      datTB$lowSETB[idX] <- predObjTB[,2]
-      datTB$highSETB[idX] <- predObjTB[,3]
+    for(i in 1:length(unique(dat3$u_Loc))){
+      x <- unique(dat3$u_Loc)[i]
+      idX <-  which(dat3$u_Loc == x)
+      xdata3 <- dat3[idX,]
+      fit <- lm(patient~poly(u_Time, input$slider50, raw=T)+poly(population, input$slider50, raw=T),data=xdata3)
+      predObj1 <- data.frame(predict(fit,newdata=xdata3,interval="confidence",
+                                    level = 0.95,type="response",se = TRUE))
+      dat3$prd[idX] <- predObj1[,1]
+      dat3$lowSE[idX] <- predObj1[,2]
+      dat3$highSE[idX] <- predObj1[,3]
     }
     
-    ##polynomial model
-    datTB$prd2TB <- 0
-    datTB$lowSE2TB <- 0
-    datTB$highSE2TB <- 0
-    for(i in 1:length(unique(datTB$u_Loc))){
-      x <- unique(datTB$u_Loc)[i]
-      idX <-  which(datTB$u_Loc == x)
-      xdataTB <- datTB[idX,]
-      fitTB2 <- lm(patient~poly(u_Time, input$slider5, raw=T)+poly(population, input$slider5, raw=T),data=xdataTB)
-      predObjTB2 <- data.frame(predict(fitTB2,newdata=xdataTB,interval="confidence",
-                                       level = 0.95,type="response",se = TRUE))
-      datTB$prdTB2[idX] <- predObjTB2[,1]
-      datTB$lowSETB2[idX] <- predObjTB2[,2]
-      datTB$highSETB2[idX] <- predObjTB2[,3]
+    
+    dat3$anom1 <- ifelse(dat3$patient>dat3$highSE | dat3$patient<dat3$lowSE, 1, 0)
+    # datanom <- subset(dat2, dat2$anom == 1)
+    
+    
+    ###polynomia model
+    dat3$prd2 <- 0
+    dat3$lowSE2 <- 0
+    dat3$highSE2 <- 0
+    for(i in 1:length(unique(dat3$u_Loc))){
+      x2 <- unique(dat3$u_Loc)[i]
+      idX2 <-  which(dat3$u_Loc == x2)
+      xdata3 <- dat3[idX2,]
+      fit2 <- lm(patient~poly(u_Time, input$slider5, raw=T)+poly(population, input$slider5, raw=T),data=xdata3)
+      predObj2 <- data.frame(predict(fit2,newdata=xdata3,interval="confidence",
+                                     level = 0.95,type="response",se = TRUE))
+      dat3$prd2[idX2] <- predObj2[,1]
+      dat3$lowSE2[idX2] <- predObj2[,2]
+      dat3$highSE2[idX2] <- predObj2[,3]
+
     }
     
-    datTB$POLY1 <- ifelse(datTB$patient>datTB$highSETB | datTB$patient<datTB$lowSETB, "Anomaly", "-")
+    dat3$anom2 <- ifelse(dat3$patient>dat3$highSE2 | dat3$patient<dat3$lowSE2, 1, 0)
     
-    datTB$POLY2 <- ifelse(datTB$patient>datTB$highSETB2 | datTB$patient<datTB$lowSETB2, "Anomaly", "-")
-    
-    #datTB
-    cons <- subset(datTB,datTB$POLY1 == "Anomaly" & datTB$POLY2 == "Anomaly")
-    cons[,.(u_Loc, u_Time, POLY1, POLY2)]
-    
-  }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
-  # })
-  
-  
-  
-  output$sum <- renderPrint({
-    data <- read.table("database.csv", header=T, sep=',')
-    data$factor = as.factor(data$factor) 
-    data$patient <- data$prevalence
-    data$prevalence <- data$prevalence/data$population
-    data4 <- subset(data, data$u_Time >= min(input$slider) & data$u_Time <= max(input$slider) & data$u_Cond ==input$var)    
-    u_Timem <- min(input$slider)  
-    
-    
-    summary(dat())})
+
+dat3$POLY1 <- ifelse(dat3$anom1 == 1, "Anomaly", "-")
+
+dat3$POLY2 <- ifelse(dat3$anom2 == 1, "Anomaly", "-")
+
+# #datTB
+cons <- subset(dat3,dat3$POLY1 == "Anomaly" & dat3$POLY2 == "Anomaly")
+DT::datatable(select(cons,u_Loc, u_Time, POLY1, POLY2),
+              options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+  })
   
   
   }
 )
+  
+  # output$sum <- renderPrint({
+  #   data <- read.table("database.csv", header=T, sep=',')
+  #   data$factor = as.factor(data$factor)
+  #   data$patient <- data$prevalence
+  #   data$prevalence <- data$prevalence/data$population
+  #   data4 <- subset(data, data$u_Time >= min(input$slider) & data$u_Time <= max(input$slider) & data$u_Cond ==input$var)
+  #   u_Timem <- min(input$slider)
+  # 
+  # 
+  #   summary(dat())})
+  
+#   
+#   }
+# )
