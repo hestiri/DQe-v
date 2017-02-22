@@ -1,6 +1,6 @@
 ####################################
 ########### Reading the source file
-
+pdf(NULL)
 ####  Install and load the required packages
 if (!require("data.table")) install.packages('data.table',repos = "http://cran.us.r-project.org")
 if (!require("shiny")) install.packages('shiny',repos = "http://cran.us.r-project.org")
@@ -10,6 +10,7 @@ if (!require("dplyr")) install.packages('dplyr',repos = "http://cran.us.r-projec
 if (!require("shinydashboard")) install.packages('shinydashboard',repos = "http://cran.us.r-project.org")
 if (!require("shinythemes")) install.packages('shinythemes',repos = "http://cran.us.r-project.org")
 if (!require("plotly")) install.packages('plotly',repos = "http://cran.us.r-project.org")
+if (!require("DT")) install.packages('DT',repos = "http://cran.us.r-project.org")
 
 path <- getwd()
 setwd(paste0(path))
@@ -151,7 +152,7 @@ shinyUI(navbarPage(title = "Variability Explorer Tool",
                               ),
                             mainPanel(
                               plotOutput("myplot4", height = 600),
-                              dataTableOutput("mytable")
+                              DT::dataTableOutput("mytable")
                             )
                           )
                           )
